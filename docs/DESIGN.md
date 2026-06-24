@@ -32,7 +32,7 @@ Consequences:
 |---|---|---|
 | Language | **Python 3.10+** | `yt-dlp` is importable as a library; whisper/vision ecosystem is Python. |
 | Frames | Extract **1 fps**; run vision only on **perceptual-hash keyframes** (scene shifts); near-duplicate seconds reuse the keyframe's summary. | Meets the "1 record per second" timeline while keeping vision cost sane (~80–250 calls for a 20-min talk vs ~1,200). |
-| Vision timing | **Eager** at ingest, on each keyframe; provider-configurable; `--no-vision` for a free transcript-only run. | Matches "vision fires when the scene shifts"; makes the digest genuinely multimodal. |
+| Vision source | **The agent running the skill is the vision** — it reads keyframes and records analysis via `set-vision` (free), folded in by `rechunk`. A paid provider `--vision` pass is the headless-only fallback. | "Vision comes from the model running the skill." |
 | Transcription | **Captions first** (yt-dlp); **faster-whisper** as an optional, recommended fallback. | Most videos have captions; whisper rarely runs, so it stays an opt-in extra. |
 | Default model | **Anthropic Claude** (Haiku-class for vision), behind an adapter; OpenAI/Gemini/Ollama swappable by env. | User's stated preference; adapter keeps it provider-agnostic for publishing. |
 | Q&A / teaching | **Hand off to the user's `teach` skill** by registering the video as a trusted **resource**; ship a standalone teaching `SKILL.md` for users without `teach`. | "Teaching method = the skill we have." |

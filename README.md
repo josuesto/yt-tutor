@@ -19,10 +19,11 @@ deterministic work (download, transcribe, frame-extract, dedupe, chunk, store). 
 
 ## Why it's built this way
 
-**Dumb engine, smart agent.** The engine never calls an LLM on the default path — it uses
-only local/deterministic tools (`yt-dlp`, `ffmpeg`, `faster-whisper`, SQLite). The one paid
-step, per-frame **vision analysis**, is **opt-in** (`--vision`) and provider-configurable.
-That keeps the tool portable across agents and cheap to run.
+**Dumb engine, smart agent.** The engine never calls an LLM on the default path. It uses
+only local, deterministic tools (`yt-dlp`, `ffmpeg`, `faster-whisper`, SQLite). **Vision comes
+from the agent running the skill:** it reads the relevant keyframes itself, and can record what
+it sees back into the store with `set-vision`. A paid per-frame vision pass (`--vision`) exists
+only for *headless* runs where no vision-capable agent is present.
 
 **Vision only on scene changes.** Frames are extracted at 1 fps (so there's a record every
 second), but vision runs only on **keyframes** — frames where the scene actually shifts
@@ -108,9 +109,11 @@ citing real timestamps. `yt-tutor` acquires the knowledge; `teach` does the peda
 
 ---
 
-## Model providers (vision pass only)
+## Headless vision providers (optional)
 
-Set `VISION_PROVIDER` in `.env`. Adapter-based — mix/match later.
+Only needed for the headless `--vision` pass, when no interactive agent is present to look at
+frames. With an agent (Claude Code, Cursor) the vision is the agent's own and these are unused.
+Set `VISION_PROVIDER` in `.env`.
 
 | Provider | Notes |
 |---|---|

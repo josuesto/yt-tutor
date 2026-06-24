@@ -14,8 +14,9 @@ workflow for using its output to teach and to cite accurately.
 
 - `yt-tutor` installed (`pip install yt-tutor`), with `ffmpeg` and `yt-dlp` on PATH.
 - Ingesting a video (transcript + frames) is **free** and needs no API key.
-- The optional `--vision` pass (per-keyframe analysis) **costs money** — ask the user
-  before using it. Without it, read keyframe images directly (step 3) for visual detail.
+- **You are the vision.** When a question needs the picture, look at the frame yourself
+  (read the image file). The engine never needs a paid vision model for this. A `--vision`
+  flag exists only for *headless* runs where no vision-capable agent is present.
 
 ## Workflow
 
@@ -35,9 +36,25 @@ context, skip the full digest and use search/ask (step 3) instead.
   timestamped evidence, each labeled speech and/or visual. Answer using only that
   evidence and cite the mm:ss timestamps.
 - Keyword lookup: `yt-tutor search <id> "<terms>"`.
-- Visual questions ("what's on the slide at 3:15?"): run `yt-tutor frames <id> --at 3:15`
-  to get the keyframe image path, then **read that image file** and answer from it.
+- Visual questions ("what's on the slide at 3:15?"): run `yt-tutor frames <id> --at 3:15`,
+  **read that image file yourself**, and answer from what you see.
 - Always state whether each point came from speech, visuals, or both.
+
+### Recording what you see (so visuals enter the digest and search)
+
+For a one-off question, reading a single frame is enough. To teach the video with real
+visual understanding, record what you see so the picture lands in the digest and is searchable:
+
+1. `yt-tutor keyframes <id> --pending --json` lists keyframes that have no description yet.
+2. For each frame that carries meaning (a slide, diagram, scene change), **read the image**,
+   then write a JSON object with: `scene_description`, `visible_text` (array; transcribe any
+   on-screen text), `objects` (array), `people`, `screen_or_slide_summary`, `notable_details`
+   (array).
+3. Store it: `yt-tutor set-vision <id> --at <ts> --file analysis.json`.
+4. When finished, `yt-tutor rechunk <id>` folds your notes into the digest and search.
+
+You do not have to describe every frame. This produces the same enriched store the paid
+`--vision` pass would, except the vision is yours and it is free.
 
 ### 4. Teaching mode — hand off to the `teach` skill
 When the user wants to *learn* the video (not just ask one-off questions), register it

@@ -206,6 +206,81 @@ def cmd_estimate(args) -> int:
     return 0
 
 
+def cmd_keyframes(args) -> int:
+    conn = _open_db()
+    vid = _resolve(conn, args.target)
+    from .util import format_timestamp
+    rows = db.get_keyframes(conn, vid)
+    if args.pending:
+        rows = [r for r in rows if r["vision_status"] != "done"]
+    if args.json:
+        print(json.dumps([{
+            "timestamp_seconds": r["timestamp_seconds"],
+            "timestamp": format_timestamp(r["timestamp_seconds"]),
+            "file_path": r["file_path"],
+            "vision_status": r["vision_status"],
+        } for r in rows], indent=2))
+        return 0
+    if not rows:
+        print("(all keyframes have visual notes)" if args.pending else "(no keyframes)")
+        return 0
+    for r in rows:
+        print(f"[{format_timestamp(r['timestamp_seconds'])}] {r['vision_status']:<8} {r['file_path']}")
+    return 0
+
+
+def cmd_set_vision(args) -> int:
+    """Record the agent's own analysis of a keyframe. THIS is the default vision path:
+    the model running the skill looks at the frame and stores what it sees."""
+    conn = _open_db()
+    vid = _resolve(conn, args.target)
+    from pathlib import Path
+    from .util import format_timestamp, parse_timestamp
+    raw = Path(args.file).read_text(encoding="utf-8") if args.file else sys.stdin.read()
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as e:
+        print(f"error: invalid JSON ({e})", file=sys.stderr)
+        return 1
+    ts = int(round(parse_timestamp(args.at)))
+    row = conn.execute(
+        "SELECT id FROM frames WHERE video_id=? AND timestamp_seconds=?", (vid, ts)).fetchone()
+    if not row:
+        print(f"error: no frame at {format_timestamp(ts)} for {vid}", file=sys.stderr)
+        return 1
+    summary = (data.get("scene_description") or data.get("screen_or_slide_summary") or "").strip()
+    db.update_frame_vision(
+        conn, row["id"], status="done",
+        scene_description=data.get("scene_description"),
+        visible_text=data.get("visible_text"),
+        objects=data.get("objects"),
+        people=data.get("people"),
+        screen_or_slide_summary=data.get("screen_or_slide_summary"),
+        notable_details=data.get("notable_details"),
+        vision_summary=summary,
+    )
+    print(f"recorded vision for {format_timestamp(ts)}")
+    return 0
+
+
+def cmd_rechunk(args) -> int:
+    conn = _open_db()
+    vid = _resolve(conn, args.target)
+    from .pipeline import chunks as chunks_mod
+    v = db.get_video(conn, vid)
+    fts = db.has_fts5(conn)
+    db.clear_chunks(conn, vid, fts=fts)
+    segs = [(r["start_seconds"], r["end_seconds"], r["text"]) for r in db.get_segments(conn, vid)]
+    kfs = [(r["timestamp_seconds"], r["file_path"], r["scene_description"] or r["vision_summary"])
+           for r in db.get_keyframes(conn, vid)]
+    chapters = json.loads(v["chapters_json"]) if v["chapters_json"] else None
+    chs = chunks_mod.build_chunks(segs, kfs, duration=v["duration_seconds"], chapters=chapters)
+    db.insert_chunks(conn, vid, chs, fts=fts)
+    described = sum(1 for k in kfs if k[2])
+    print(f"rechunked {vid}: {len(chs)} chunks ({described} keyframes have visual notes)")
+    return 0
+
+
 # --- placeholder until the phase lands -------------------------------------
 
 def _todo(phase: int):
@@ -280,6 +355,25 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("status", help="Show ingest progress for a video.")
     s.add_argument("video")
     s.set_defaults(func=cmd_status, _cmd="status")
+
+    # --- agent-provided vision (the model running the skill IS the vision) ---
+    s = sub.add_parser("keyframes", help="List keyframes (the frames worth looking at).")
+    s.add_argument("target", metavar="video|url")
+    s.add_argument("--pending", action="store_true", help="Only frames not yet described.")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(func=cmd_keyframes, _cmd="keyframes")
+
+    s = sub.add_parser("set-vision",
+                       help="Record YOUR analysis of a keyframe (agent-provided vision).")
+    s.add_argument("target", metavar="video|url")
+    s.add_argument("--at", required=True, help="Timestamp of the keyframe, e.g. 3:15 or 195.")
+    s.add_argument("--file", help="JSON file with the frame analysis (else read stdin).")
+    s.set_defaults(func=cmd_set_vision, _cmd="set-vision")
+
+    s = sub.add_parser("rechunk",
+                       help="Rebuild chunks so recorded visuals flow into digest + search.")
+    s.add_argument("target", metavar="video|url")
+    s.set_defaults(func=cmd_rechunk, _cmd="rechunk")
 
     return p
 
