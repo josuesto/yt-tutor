@@ -173,6 +173,19 @@ def cmd_frames(args) -> int:
     return 0
 
 
+def cmd_resource(args) -> int:
+    conn = _open_db()
+    vid = _resolve(conn, args.target)
+    from .qa import digest as digest_mod
+    from . import teach_export
+    # make sure the digest file the resource points at exists
+    d = digest_mod.build_digest(conn, vid)
+    digest_mod.write_digest_file(vid, digest_mod.render_markdown(d))
+    path, added = teach_export.register_resource(conn, vid, workspace=args.workspace)
+    print(f"{'registered in' if added else 'already present in'} {path}")
+    return 0
+
+
 # --- placeholder until the phase lands -------------------------------------
 
 def _todo(phase: int):
@@ -209,7 +222,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     handlers = {
         "digest": cmd_digest, "summary": cmd_summary, "search": cmd_search,
-        "ask": cmd_ask, "frames": cmd_frames,
+        "ask": cmd_ask, "frames": cmd_frames, "resource": cmd_resource,
     }
     specs = {
         "digest": (4, "Emit the timestamped transcript + visual digest."),
@@ -232,6 +245,9 @@ def build_parser() -> argparse.ArgumentParser:
             s.add_argument("--at", required=True, help="Timestamp, e.g. 3:15 or 195.")
             s.add_argument("--window", type=int, default=0, metavar="SEC",
                            help="Seconds around --at to include (default 0).")
+        if name == "resource":
+            s.add_argument("--workspace", default=None, metavar="DIR",
+                           help="teach workspace dir (default: current directory).")
         if name == "digest":
             s.add_argument("--md", action="store_true", help="Markdown output (default).")
             s.add_argument("--json", action="store_true", help="Structured JSON output.")

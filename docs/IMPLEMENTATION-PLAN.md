@@ -72,14 +72,15 @@ returns bm25-ranked chunks with timestamps; `ask` returns speech/visual-labeled 
 ---
 
 ## Phase 5 — SKILL.md + teach handoff
-- [ ] Build `SKILL.md` via the `skill-creator` skill (valid Claude Code skill).
-- [ ] `teach_export.py` — append/update a `## Knowledge` entry in workspace `RESOURCES.md`
-      (per `RESOURCES-FORMAT.md`) + link the digest. **(contribution: annotation line)**
-- [ ] `cli.py` — wire `resource`; `ingest --teach` runs ingest + resource.
-- [ ] Document the `/teach` handoff in `SKILL.md`.
+- [x] Build `SKILL.md` (root) via the `skill-creator` skill + `references/cli.md` (progressive disclosure).
+- [x] `teach_export.py` — append/update a `## Knowledge` entry in workspace `RESOURCES.md`
+      (per `RESOURCES-FORMAT.md`) + link the digest; idempotent, preserves existing content.
+- [x] `cli.py` — wire `resource` (+ `--workspace`); `ingest --teach` runs ingest + resource.
+- [x] Document the `/teach` handoff in `SKILL.md`.
 
-**Acceptance:** after `ingest --teach`, the workspace `RESOURCES.md` gains a well-formed,
-annotated video entry pointing at the digest; `/teach` can ground a lesson on it.
+**Acceptance:** ✅ `yt-tutor resource <id>` (and `ingest --teach`) writes a well-formed,
+annotated `## Knowledge` entry pointing at the digest; idempotent. Validated live into a
+teach workspace. 3 new tests (24 total).
 
 ---
 

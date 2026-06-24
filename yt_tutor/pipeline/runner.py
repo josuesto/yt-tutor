@@ -47,7 +47,12 @@ def ingest(url, *, vision=False, do_teach=False, force=False,
         _summary_stage(conn, vid, vision, force, progress)
 
         if do_teach:
-            progress("teach: handoff arrives in Phase 5 - skipping for now.")
+            from ..qa import digest as digest_mod
+            from .. import teach_export
+            d = digest_mod.build_digest(conn, vid)
+            digest_mod.write_digest_file(vid, digest_mod.render_markdown(d))
+            res_path, added = teach_export.register_resource(conn, vid)
+            progress(f"teach: {'registered in' if added else 'already in'} {res_path}")
 
         db.set_video_status(conn, vid, "done", last_step="chunks")
         progress("done.")
