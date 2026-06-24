@@ -77,7 +77,10 @@ as grounded knowledge: run `yt-tutor ingest "<url>" --teach` (or `yt-tutor resou
 after ingesting). This adds the video as a `## Knowledge` entry in the current `teach`
 workspace's `RESOURCES.md`, pointing at the saved digest. Then follow the `teach` skill:
 build mission-grounded lessons from the video, using its mm:ss timestamps as the cited,
-trusted source (never guess content the digest doesn't contain).
+trusted source (never guess content the digest doesn't contain). When a lesson covers
+something shown on screen, **embed the actual keyframe image** (copy or link the file from
+`frames --at`); show the diagram or slide, do not just describe it. Keep lessons dense and
+grounded, not a one-paragraph stub.
 
 ## Verify every claim against the source (before teaching or answering)
 
