@@ -99,3 +99,25 @@ Force a clean re-run of all stages with `--force`. Check progress anytime with
 
 The transcript `source` is recorded per segment (`youtube_captions` or `whisper`)
 so answers can say where the words came from.
+
+---
+
+## Verifying claims and lessons
+
+Teaching from a video is only trustworthy if every citation is checked, and citations drift by
+seconds. Three commands ground a claim against the source:
+
+- `yt-tutor transcript <id> --at <ts>` — the words spoken around a moment (spoken claims).
+- `yt-tutor frames <id> --at <ts>` — the keyframe image to read (visual claims).
+- `yt-tutor verify <id> --lesson <file>` — **one pass** over a whole lesson: every cited timestamp
+  with its transcript window and nearest keyframe. Confirm each claim; fix the timestamp or drop it.
+
+The skill (`SKILL.md`) makes `verify --lesson` a mandatory step before a learner sees a lesson.
+
+## Agent-provided vision vs the headless `--vision` pass
+
+By default the agent running the skill is the vision system: it reads keyframes itself (free) and
+records what it sees with `set-vision`, then `rechunk` folds those notes into the digest and search.
+The paid `--vision` pass (provider set by `VISION_PROVIDER`) only exists for headless runs where no
+vision-capable agent is present. `keyframes --by-salience` ranks frames by an edge-density content
+score so the richest frames are described first and near-blank transitions are skipped.

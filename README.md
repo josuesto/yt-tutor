@@ -74,7 +74,10 @@ yt-tutor search <video-id-or-url> "what did they say about attention?"
 # 4. Pull the exact frame shown at a moment (for visual questions)
 yt-tutor frames <video-id-or-url> --at 3:15
 
-# Optional: pre-analyze keyframes with a vision model (costs money)
+# 5. Verify a lesson's citations against the source, in one pass, before teaching from it
+yt-tutor verify <video-id-or-url> --lesson lesson.html
+
+# Optional, headless only: pre-analyze keyframes with a paid vision model
 yt-tutor estimate "https://youtu.be/..."     # preview the cost first
 yt-tutor ingest  "https://youtu.be/..." --vision
 ```
@@ -85,14 +88,19 @@ yt-tutor ingest  "https://youtu.be/..." --vision
 
 | Command | Purpose |
 |---|---|
-| `ingest <url> [--vision/--no-vision] [--teach] [--force]` | Run the full pipeline (resumable). |
-| `digest <id\|url> [--md\|--json]` | Emit the timestamped transcript + visual digest. |
-| `summary <id\|url>` | The detailed multimodal summary. |
-| `frames <id\|url> --at <ts>` | Resolve a timestamp → keyframe image path(s). |
-| `search <id\|url> "<q>" [--json]` | FTS5 retrieval over chunks (evidence for agents). |
-| `ask <id\|url> "<q>" [--json]` | Retrieve evidence (and optionally synthesize an answer). |
+| `ingest <url> [--no-vision] [--teach] [--force]` | Run the full pipeline (resumable). |
+| `digest <id\|url> [--md\|--json]` | The timestamped transcript + frame index an agent loads to know the video. |
+| `summary <id\|url>` | Free structural overview (stats, chapters, timeline). |
+| `search <id\|url> "<q>" [--json]` | FTS5 retrieval over chunks (long-video fallback). |
+| `ask <id\|url> "<q>" [--json]` | Timestamped evidence for a question, labeled speech/visual. |
+| `frames <id\|url> --at <ts>` | Resolve a timestamp → keyframe image to read. |
+| `transcript <id\|url> --at <ts>` | Spoken transcript around a moment (verify a claim). |
+| `keyframes <id\|url> [--pending] [--by-salience]` | List the frames worth looking at, richest first. |
+| `set-vision <id\|url> --at <ts> --file <json>` | Record the agent's own analysis of a frame. |
+| `rechunk <id\|url>` | Fold recorded visuals into digest + search. |
+| `verify <id\|url> --lesson <file>` | Check every timestamp a lesson cites against the source, one pass. |
 | `resource <id\|url>` | Register the video in a `teach` workspace's `RESOURCES.md`. |
-| `status <id\|url>` · `list` · `estimate <url>` | Ingest progress · library · cost preview. |
+| `status <id>` · `list` · `estimate <url>` | Ingest progress · library · headless-vision cost preview. |
 
 ---
 
@@ -102,10 +110,11 @@ yt-tutor ingest  "https://youtu.be/..." --vision
 "know" the video, answer **with timestamps**, label **speech vs visual**, and pull keyframes
 for visual questions.
 
-**With the [`teach`](https://github.com/) skill:** `yt-tutor ingest <url> --teach` registers
-the video as a trusted **Knowledge** resource in your `teach` workspace's `RESOURCES.md` and
-drops the digest as grounding. Then `/teach` builds mission-grounded lessons from the video,
-citing real timestamps. `yt-tutor` acquires the knowledge; `teach` does the pedagogy.
+**With a `teach` skill:** `yt-tutor ingest <url> --teach` registers the video as a trusted
+**Knowledge** resource in your `teach` workspace's `RESOURCES.md` and drops the digest as grounding.
+Then `/teach` builds mission-grounded lessons from the video, citing real timestamps. `yt-tutor`
+acquires the knowledge; `teach` does the pedagogy. The skill instructs the agent to **verify every
+citation** (`yt-tutor verify --lesson <file>`) before a learner sees the lesson.
 
 ---
 
@@ -136,6 +145,7 @@ Set `VISION_PROVIDER` in `.env`.
 
 Web UI + clickable player, embeddings/hybrid retrieval, OCR-only pre-pass, playlists,
 multi-video knowledge bases, background queue. See [`docs/DESIGN.md`](docs/DESIGN.md).
+Project state and how to resume: [`docs/HANDOFF.md`](docs/HANDOFF.md).
 
 ## License
 

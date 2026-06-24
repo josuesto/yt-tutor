@@ -46,7 +46,9 @@ Two artifacts in one repo:
 
 ```
 yt_tutor/
-  cli.py            # argparse entry: ingest · digest · summary · frames · search · ask · resource · status · list · estimate
+  cli.py            # ingest · digest · summary · search · ask · frames · transcript
+                    # · keyframes · set-vision · rechunk · verify · resource · status · list · estimate
+  verify.py         # extract every timestamp a lesson cites (for one-pass verification)
   config.py         # env loading, provider selection, deterministic paths
   db.py             # SQLite schema + CRUD (the store)
   pipeline/
