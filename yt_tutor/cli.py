@@ -1,13 +1,15 @@
 """yt-tutor command-line interface.
 
-Heavy imports (pipeline, providers) are deferred into each handler so the package
-imports instantly and `--help` works even before optional deps are installed.
+Heavy imports (pipeline, qa, providers) are deferred into each handler so the
+package imports instantly and `--help` works before optional deps are installed.
 Commands not yet built print a clear "arrives in Phase N" message.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
+import re
 import sys
 
 from . import __version__, config, db, errors
@@ -20,7 +22,20 @@ def _open_db():
     return conn
 
 
-# --- implemented commands --------------------------------------------------
+def _resolve(conn, target: str) -> str:
+    """Resolve a YouTube id or URL to an ingested video id, or exit with guidance."""
+    if db.get_video(conn, target):
+        return target
+    m = re.search(r"(?:v=|youtu\.be/|/shorts/|/embed/)([A-Za-z0-9_-]{11})", target or "")
+    vid = m.group(1) if m else (target if re.fullmatch(r"[A-Za-z0-9_-]{11}", target or "") else None)
+    if vid and db.get_video(conn, vid):
+        return vid
+    print(f"error: '{target}' is not ingested yet. Run:  yt-tutor ingest \"{target}\"",
+          file=sys.stderr)
+    raise SystemExit(1)
+
+
+# --- library / status ------------------------------------------------------
 
 def cmd_list(args) -> int:
     conn = _open_db()
@@ -48,6 +63,8 @@ def cmd_status(args) -> int:
     return 0
 
 
+# --- ingest ----------------------------------------------------------------
+
 def cmd_ingest(args) -> int:
     config.load_dotenv()
     from .pipeline import runner
@@ -73,6 +90,86 @@ def cmd_ingest(args) -> int:
         return 130
 
     print(f"\ningested {vid}.  Next:  yt-tutor digest {vid} --md")
+    return 0
+
+
+# --- read layer (Phase 4) --------------------------------------------------
+
+def cmd_digest(args) -> int:
+    conn = _open_db()
+    vid = _resolve(conn, args.target)
+    from .qa import digest as digest_mod
+    d = digest_mod.build_digest(conn, vid)
+    if args.json:
+        print(digest_mod.render_json(d))
+    else:
+        md = digest_mod.render_markdown(d)
+        print(md)
+        path = digest_mod.write_digest_file(vid, md)
+        print(f"\n(saved to {path})", file=sys.stderr)
+    return 0
+
+
+def cmd_summary(args) -> int:
+    conn = _open_db()
+    vid = _resolve(conn, args.target)
+    row = db.get_summary(conn, vid)
+    if not row:
+        from .pipeline import summary as summary_mod
+        summary_mod.run(conn, vid)
+        row = db.get_summary(conn, vid)
+    print(row["detailed_md"] if row else "(no summary available)")
+    return 0
+
+
+def cmd_search(args) -> int:
+    conn = _open_db()
+    vid = _resolve(conn, args.target)
+    from .qa import search as search_mod
+    results = search_mod.search(conn, vid, args.query, top_k=args.top_k)
+    if args.json:
+        print(json.dumps(results, indent=2, ensure_ascii=False))
+        return 0
+    if not results:
+        print("(no matches)")
+        return 0
+    from .util import format_timestamp
+    for r in results:
+        print(f"[{format_timestamp(r['start_seconds'])}] {r['snippet']}")
+    return 0
+
+
+def cmd_ask(args) -> int:
+    conn = _open_db()
+    vid = _resolve(conn, args.target)
+    from .qa import ask as ask_mod
+    ev = ask_mod.gather_evidence(conn, vid, args.query, top_k=args.top_k)
+    if args.json:
+        print(json.dumps(ev, indent=2, ensure_ascii=False))
+    else:
+        print(ask_mod.render_markdown(ev))
+    return 0
+
+
+def cmd_frames(args) -> int:
+    conn = _open_db()
+    vid = _resolve(conn, args.target)
+    from .util import format_timestamp, parse_timestamp
+    ts = int(round(parse_timestamp(args.at)))
+    window = args.window
+    rows = conn.execute(
+        """SELECT timestamp_seconds, file_path, is_keyframe, duplicate_of FROM frames
+           WHERE video_id=? AND timestamp_seconds BETWEEN ? AND ?
+           ORDER BY timestamp_seconds""",
+        (vid, ts - window, ts + window)).fetchall()
+    if not rows:
+        print(f"(no frames near {format_timestamp(ts)})")
+        return 1
+    for r in rows:
+        # a duplicate frame points at the keyframe that represents its scene
+        repr_ts = r["timestamp_seconds"] if r["is_keyframe"] else r["duplicate_of"]
+        tag = "keyframe" if r["is_keyframe"] else f"~scene@{format_timestamp(repr_ts or 0)}"
+        print(f"[{format_timestamp(r['timestamp_seconds'])}] {tag:<16} {r['file_path']}")
     return 0
 
 
@@ -110,12 +207,15 @@ def build_parser() -> argparse.ArgumentParser:
                          "(default 10; higher = fewer frames analyzed). See docs/MANUAL.md.")
     sp.set_defaults(func=cmd_ingest, _cmd="ingest")
 
-    # query / export commands (built in later phases)
+    handlers = {
+        "digest": cmd_digest, "summary": cmd_summary, "search": cmd_search,
+        "ask": cmd_ask, "frames": cmd_frames,
+    }
     specs = {
         "digest": (4, "Emit the timestamped transcript + visual digest."),
-        "summary": (4, "Show the detailed multimodal summary."),
+        "summary": (4, "Show the detailed structural overview."),
         "search": (4, "FTS5 retrieval over chunks."),
-        "ask": (4, "Retrieve evidence (and optionally synthesize an answer)."),
+        "ask": (4, "Gather timestamped evidence for a question."),
         "frames": (4, "Resolve a timestamp to keyframe image path(s)."),
         "resource": (5, "Register the video in a teach workspace RESOURCES.md."),
         "estimate": (6, "Preview the vision-pass cost before ingesting."),
@@ -126,14 +226,16 @@ def build_parser() -> argparse.ArgumentParser:
                        help="A YouTube id or URL (a URL for `estimate`).")
         if name in ("search", "ask"):
             s.add_argument("query")
+            s.add_argument("--json", action="store_true")
+            s.add_argument("--top-k", type=int, default=(8 if name == "search" else 6))
         if name == "frames":
             s.add_argument("--at", required=True, help="Timestamp, e.g. 3:15 or 195.")
+            s.add_argument("--window", type=int, default=0, metavar="SEC",
+                           help="Seconds around --at to include (default 0).")
         if name == "digest":
-            s.add_argument("--md", action="store_true")
-            s.add_argument("--json", action="store_true")
-        if name in ("search", "ask"):
-            s.add_argument("--json", action="store_true")
-        s.set_defaults(func=_todo(phase), _cmd=name)
+            s.add_argument("--md", action="store_true", help="Markdown output (default).")
+            s.add_argument("--json", action="store_true", help="Structured JSON output.")
+        s.set_defaults(func=handlers.get(name, _todo(phase)), _cmd=name)
 
     s = sub.add_parser("list", help="List ingested videos.")
     s.set_defaults(func=cmd_list, _cmd="list")

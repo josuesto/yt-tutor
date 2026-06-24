@@ -298,3 +298,23 @@ def insert_chunks(conn, video_id, chunks, fts=True) -> None:
 def count_chunks(conn, video_id) -> int:
     return conn.execute(
         "SELECT COUNT(*) c FROM chunks WHERE video_id=?", (video_id,)).fetchone()["c"]
+
+
+def get_chunks(conn, video_id):
+    return conn.execute(
+        "SELECT * FROM chunks WHERE video_id=? ORDER BY start_seconds", (video_id,)).fetchall()
+
+
+# --- summary ---------------------------------------------------------------
+
+def upsert_summary(conn, video_id, tl_dr, detailed_md) -> None:
+    conn.execute(
+        """INSERT INTO summaries (video_id, tl_dr, detailed_md, created_at) VALUES (?,?,?,?)
+           ON CONFLICT(video_id) DO UPDATE SET
+             tl_dr=excluded.tl_dr, detailed_md=excluded.detailed_md, created_at=excluded.created_at""",
+        (video_id, tl_dr, detailed_md, now_iso()))
+    conn.commit()
+
+
+def get_summary(conn, video_id):
+    return conn.execute("SELECT * FROM summaries WHERE video_id=?", (video_id,)).fetchone()

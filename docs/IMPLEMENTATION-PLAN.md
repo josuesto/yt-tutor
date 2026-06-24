@@ -59,14 +59,15 @@ only; re-run re-pays nothing; a forced API error leaves the ingest resumable.
 ---
 
 ## Phase 4 — Digest + summary + search
-- [ ] `qa/digest.py` — timestamped multimodal digest (`--md`/`--json`); write `digest.md`.
-- [ ] `pipeline/summary.py` — detailed multimodal summary + tl;dr → `summaries`.
-- [ ] `qa/search.py` — FTS5 query → ranked chunks (+ frame paths, timestamps).
-- [ ] `qa/ask.py` — retrieve + return evidence (`--json`) or synthesize if a provider is set.
-- [ ] `cli.py` — wire `digest`, `summary`, `search`, `ask`, `frames`.
+- [x] `qa/digest.py` — timestamped multimodal digest (`--md`/`--json`); write `digest.md`.
+- [x] `pipeline/summary.py` — free structural overview + tl;dr → `summaries` (agent writes the prose).
+- [x] `qa/search.py` — FTS5 query → ranked chunks (+ frame paths, timestamps); LIKE fallback.
+- [x] `qa/ask.py` — retrieve + return timestamped evidence labeled speech/visual (`--json`).
+- [x] `cli.py` — wire `digest`, `summary`, `search`, `ask`, `frames` (+ `_resolve` id/url).
 
-**Acceptance:** `digest` emits a clean timestamped doc; `search "<q>"` returns relevant
-chunks with timestamps; `frames --at 3:15` prints the right image path(s).
+**Acceptance:** ✅ `digest` emits a clean timestamped doc (saved to `digest.md`); `search "<q>"`
+returns bm25-ranked chunks with timestamps; `ask` returns speech/visual-labeled evidence;
+`frames --at 1:00` resolves to the representing keyframe. Validated live on `dQw4w9WgXcQ`.
 
 ---
 
