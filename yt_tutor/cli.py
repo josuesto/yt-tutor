@@ -210,22 +210,27 @@ def cmd_keyframes(args) -> int:
     conn = _open_db()
     vid = _resolve(conn, args.target)
     from .util import format_timestamp
-    rows = db.get_keyframes(conn, vid)
+    rows = list(db.get_keyframes(conn, vid))
     if args.pending:
         rows = [r for r in rows if r["vision_status"] != "done"]
+    if args.by_salience:
+        rows.sort(key=lambda r: (r["salience"] is None, -(r["salience"] or 0.0)))
     if args.json:
         print(json.dumps([{
             "timestamp_seconds": r["timestamp_seconds"],
             "timestamp": format_timestamp(r["timestamp_seconds"]),
             "file_path": r["file_path"],
             "vision_status": r["vision_status"],
+            "salience": r["salience"],
         } for r in rows], indent=2))
         return 0
     if not rows:
         print("(all keyframes have visual notes)" if args.pending else "(no keyframes)")
         return 0
     for r in rows:
-        print(f"[{format_timestamp(r['timestamp_seconds'])}] {r['vision_status']:<8} {r['file_path']}")
+        sal = f"{r['salience']:.3f}" if r["salience"] is not None else "  -  "
+        print(f"[{format_timestamp(r['timestamp_seconds'])}] {r['vision_status']:<8} "
+              f"sal={sal} {r['file_path']}")
     return 0
 
 
@@ -360,6 +365,8 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("keyframes", help="List keyframes (the frames worth looking at).")
     s.add_argument("target", metavar="video|url")
     s.add_argument("--pending", action="store_true", help="Only frames not yet described.")
+    s.add_argument("--by-salience", action="store_true",
+                   help="Sort by content score, richest frames first.")
     s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_keyframes, _cmd="keyframes")
 

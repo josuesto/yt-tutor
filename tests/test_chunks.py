@@ -39,3 +39,12 @@ def test_keyframe_visuals_aggregate_into_chunk_and_search_text():
     # backward-compatible: 2-tuples (no vision) still work, visual_summary stays None
     plain = build_chunks(segs, [(3, "a.jpg")], target_seconds=20, duration=20)
     assert plain[0]["visual_summary"] is None
+
+
+def test_edges_extend_to_zero_and_duration():
+    # captions start at 4s; a title-card keyframe at 0:01 must not be orphaned
+    segs = [(4, 24, "starts at four seconds")]
+    chunks = build_chunks(segs, [(1, "intro.jpg")], target_seconds=20, duration=30)
+    assert chunks[0]["start_seconds"] == 0
+    assert "intro.jpg" in chunks[0]["frame_paths"]
+    assert chunks[-1]["end_seconds"] == 30

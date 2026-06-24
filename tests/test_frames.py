@@ -51,3 +51,17 @@ def test_dedup_marks_duplicates_against_anchor(tmp_path):
     assert rows[1]["duplicate_of"] == 0       # dupes point back to the anchor's ts
     assert rows[2]["duplicate_of"] == 0
     assert rows[3]["duplicate_of"] is None
+    assert all("salience" in r for r in rows)  # every frame carries a content score
+
+
+def test_content_score_distinguishes_blank_from_busy():
+    from PIL import Image
+
+    from yt_tutor.pipeline.frames import content_score
+    blank = Image.new("L", (64, 64), 0)               # a black title card
+    busy = Image.new("L", (64, 64))
+    for y in range(64):
+        for x in range(64):
+            busy.putpixel((x, y), 255 if (x + y) % 2 == 0 else 0)  # dense structure
+    assert content_score(blank) == 0.0
+    assert content_score(busy) > 0.5

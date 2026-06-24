@@ -21,11 +21,9 @@ _VIDEO_EXTS = (".mp4", ".mkv", ".webm", ".mov")
 
 # --- perceptual hashing ----------------------------------------------------
 
-def dhash(path, hash_size: int = 8) -> int:
-    """64-bit difference hash: compares each pixel to its right neighbour on a
-    (hash_size+1 x hash_size) grayscale thumbnail. Robust to brightness/scale,
-    sensitive to structure — ideal for spotting scene changes."""
-    img = Image.open(path).convert("L").resize((hash_size + 1, hash_size))
+def _dhash_image(image, hash_size: int = 8) -> int:
+    """64-bit difference hash of an already-open image."""
+    img = image.convert("L").resize((hash_size + 1, hash_size))
     px = img.load()
     bits = 0
     idx = 0
@@ -34,6 +32,33 @@ def dhash(path, hash_size: int = 8) -> int:
             bits |= (1 if px[x, y] < px[x + 1, y] else 0) << idx
             idx += 1
     return bits
+
+
+def dhash(path, hash_size: int = 8) -> int:
+    """64-bit difference hash from a file path. Robust to brightness/scale,
+    sensitive to structure — ideal for spotting scene changes."""
+    return _dhash_image(Image.open(path), hash_size)
+
+
+def content_score(image) -> float:
+    """Edge-density score in [0,1]: how much structure (text, diagrams, lines) a
+    frame holds, versus near-blank transition frames. Mean absolute gradient over a
+    64x64 grayscale thumbnail. A black title card scores ~0; a slide of math scores high.
+    Lets the agent spend its attention on the keyframes that actually carry content."""
+    g = image.convert("L").resize((64, 64))
+    px = g.load()
+    total = 0
+    n = 0
+    for y in range(64):
+        for x in range(64):
+            v = px[x, y]
+            if x + 1 < 64:
+                total += abs(v - px[x + 1, y])
+                n += 1
+            if y + 1 < 64:
+                total += abs(v - px[x, y + 1])
+                n += 1
+    return round((total / n) / 255.0, 4) if n else 0.0
 
 
 def hamming(a: int, b: int) -> int:
@@ -127,9 +152,12 @@ def dedup_frames(frames, threshold: int):
     anchor_ts = None
     for _index, ts, path in frames:
         try:
-            h = dhash(path)
+            img = Image.open(path)
+            h = _dhash_image(img)
+            sal = content_score(img)
         except Exception:
             h = None  # unreadable frame -> be safe and treat it as a keyframe
+            sal = None
         keyframe = True if h is None else is_new_keyframe(anchor_hash, h, threshold)
         if keyframe:
             if h is not None:
@@ -143,6 +171,7 @@ def dedup_frames(frames, threshold: int):
             "timestamp_seconds": ts,
             "file_path": str(path),
             "phash": format(h, "016x") if h is not None else None,
+            "salience": sal,
             "is_keyframe": 1 if keyframe else 0,
             "duplicate_of": duplicate_of,
         })

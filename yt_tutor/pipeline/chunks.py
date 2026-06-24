@@ -35,6 +35,13 @@ def build_chunks(segments, keyframes, *, target_seconds=None, duration=None, cha
             chunks.append(_mk_chunk(t, min(t + target, duration), []))
             t += target
 
+    # Extend the edges so frames before the first caption or after the last are not
+    # orphaned out of every chunk (e.g. a title card, or a closing diagram).
+    if chunks:
+        chunks[0]["start_seconds"] = 0.0
+        if duration:
+            chunks[-1]["end_seconds"] = max(chunks[-1]["end_seconds"], float(duration))
+
     chap = chapters or []
     for c in chunks:
         # keyframes are (ts, file_path) or (ts, file_path, visual_text)

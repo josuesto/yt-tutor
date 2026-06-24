@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS frames (
     timestamp_seconds       INTEGER NOT NULL,
     file_path               TEXT NOT NULL,
     phash                   TEXT,
+    salience                REAL,                   -- edge-density content score 0..1
     is_keyframe             INTEGER NOT NULL DEFAULT 0,
     duplicate_of            INTEGER,                -- timestamp of the keyframe reused
     vision_status           TEXT NOT NULL DEFAULT 'pending', -- pending|done|reused|skipped|failed
@@ -127,11 +128,19 @@ def has_fts5(conn: sqlite3.Connection) -> bool:
 def init_db(conn: sqlite3.Connection) -> bool:
     """Create the schema. Returns True if FTS5 (search) is available."""
     conn.executescript(CORE_SCHEMA)
+    _ensure_columns(conn)
     fts = has_fts5(conn)
     if fts:
         conn.executescript(FTS_SCHEMA)
     conn.commit()
     return fts
+
+
+def _ensure_columns(conn: sqlite3.Connection) -> None:
+    """Forward-compat: add columns introduced after a DB was first created."""
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(frames)")}
+    if "salience" not in cols:
+        conn.execute("ALTER TABLE frames ADD COLUMN salience REAL")
 
 
 # --- videos ----------------------------------------------------------------
@@ -235,9 +244,11 @@ def insert_frames(conn, rows) -> None:
     is_keyframe, duplicate_of. Idempotent via UNIQUE(video_id, timestamp_seconds)."""
     conn.executemany(
         """INSERT OR IGNORE INTO frames
-           (video_id, timestamp_seconds, file_path, phash, is_keyframe, duplicate_of, vision_status)
-           VALUES (:video_id, :timestamp_seconds, :file_path, :phash, :is_keyframe, :duplicate_of, 'pending')""",
-        list(rows),
+           (video_id, timestamp_seconds, file_path, phash, salience,
+            is_keyframe, duplicate_of, vision_status)
+           VALUES (:video_id, :timestamp_seconds, :file_path, :phash, :salience,
+                   :is_keyframe, :duplicate_of, 'pending')""",
+        [{"salience": None, **r} for r in rows],  # default missing optional keys
     )
     conn.commit()
 

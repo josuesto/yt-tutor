@@ -58,7 +58,9 @@ force `/teach`: a quick question should never require setting up a lesson worksp
 For a one-off question, reading a single frame is enough. To teach the video with real
 visual understanding, record what you see so the picture lands in the digest and is searchable:
 
-1. `yt-tutor keyframes <id> --pending --json` lists keyframes that have no description yet.
+1. `yt-tutor keyframes <id> --pending --by-salience --json` lists keyframes that have no
+   description yet, richest content first (each carries a `salience` score; near-blank
+   transition frames sink to the bottom and usually are not worth describing).
 2. For each frame that carries meaning (a slide, diagram, scene change), **read the image**,
    then write a JSON object with: `scene_description`, `visible_text` (array; transcribe any
    on-screen text), `objects` (array), `people`, `screen_or_slide_summary`, `notable_details`
