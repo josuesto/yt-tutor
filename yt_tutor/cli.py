@@ -310,6 +310,60 @@ def cmd_transcript(args) -> int:
     return 0
 
 
+def cmd_verify(args) -> int:
+    """One-pass check of every timestamp a lesson cites: the words spoken there and
+    the nearest keyframe to open. The agent confirms each claim against this report."""
+    conn = _open_db()
+    vid = _resolve(conn, args.target)
+    from pathlib import Path
+    from . import verify as verify_mod
+    from .util import format_timestamp, parse_timestamp
+
+    v = db.get_video(conn, vid)
+    dur = v["duration_seconds"] if v else None
+    timestamps = set()
+    if args.lesson:
+        text = Path(args.lesson).read_text(encoding="utf-8", errors="ignore")
+        timestamps.update(verify_mod.extract_timestamps(text, max_seconds=dur))
+    for a in (args.at or []):
+        timestamps.add(int(round(parse_timestamp(a))))
+    if not timestamps:
+        print("nothing to verify: pass --lesson <file> or --at <ts>", file=sys.stderr)
+        return 1
+
+    checks = []
+    for ts in sorted(timestamps):
+        segs = db.get_segments_around(conn, vid, ts - args.window, ts + args.window)
+        kf = conn.execute(
+            "SELECT timestamp_seconds, file_path FROM frames WHERE video_id=? AND is_keyframe=1 "
+            "ORDER BY ABS(timestamp_seconds - ?) LIMIT 1", (vid, ts)).fetchone()
+        checks.append({
+            "timestamp_seconds": ts, "timestamp": format_timestamp(ts),
+            "said": [{"timestamp": format_timestamp(s["start_seconds"]), "text": s["text"]}
+                     for s in segs],
+            "nearest_keyframe_seconds": kf["timestamp_seconds"] if kf else None,
+            "nearest_keyframe": kf["file_path"] if kf else None,
+        })
+
+    if args.json:
+        print(json.dumps({"video_id": vid, "checks": checks}, indent=2, ensure_ascii=False))
+        return 0
+
+    print(f"Verifying {len(checks)} cited moment(s) in one pass. Confirm each lesson claim against "
+          f"the words/frame below; fix the timestamp or drop the claim if it does not match.\n")
+    for c in checks:
+        kf = (f"{format_timestamp(c['nearest_keyframe_seconds'])} -> {c['nearest_keyframe']}"
+              if c["nearest_keyframe"] else "none")
+        print(f"[{c['timestamp']}]  (read frame: {kf})")
+        if c["said"]:
+            for s in c["said"]:
+                print(f"    said [{s['timestamp']}] {s['text']}")
+        else:
+            print("    (no transcript here; treat as visual-only and open the frame)")
+        print()
+    return 0
+
+
 # --- placeholder until the phase lands -------------------------------------
 
 def _todo(phase: int):
@@ -414,6 +468,17 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Seconds around --at to include (default 8).")
     s.add_argument("--json", action="store_true")
     s.set_defaults(func=cmd_transcript, _cmd="transcript")
+
+    s = sub.add_parser("verify",
+                       help="Check every timestamp a lesson cites against the source, in one pass.")
+    s.add_argument("target", metavar="video|url")
+    s.add_argument("--lesson", help="A lesson file (HTML/MD/text); every cited timestamp is checked.")
+    s.add_argument("--at", action="append", metavar="TS",
+                   help="Also check this timestamp (repeatable).")
+    s.add_argument("--window", type=int, default=6, metavar="SEC",
+                   help="Seconds around each citation (default 6).")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(func=cmd_verify, _cmd="verify")
 
     return p
 

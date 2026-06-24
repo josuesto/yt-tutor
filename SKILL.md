@@ -82,22 +82,30 @@ something shown on screen, **embed the actual keyframe image** (copy or link the
 `frames --at`); show the diagram or slide, do not just describe it. Keep lessons dense and
 grounded, not a one-paragraph stub.
 
-## Verify every claim against the source (before teaching or answering)
+## Verify every claim against the source (do this before the learner sees anything)
 
-This is the cardinal rule, the same one the `teach` skill enforces: never assert anything the
-video does not actually contain, and never cite a timestamp you have not checked. A lesson or
-answer is only as trustworthy as its citations. Before presenting any lesson, summary, or answer:
+This is the cardinal rule, the same one the `teach` skill enforces: never assert anything the video
+does not contain, and never cite a timestamp you have not checked. Citations drift by seconds, so
+checking is not optional.
 
-- For every **spoken** claim with a timestamp, run `yt-tutor transcript <id> --at <ts>` and confirm
-  the words there actually support the claim. Move the timestamp or drop the claim if they do not.
-  A number or term you assert (for example a specific count) must appear at the time you cite, not
-  merely nearby.
-- For every **visual** claim, run `yt-tutor frames <id> --at <ts>` and **read the image** to confirm
-  what is on screen. Never describe a frame you have not opened.
-- If a claim cannot be grounded in the transcript or a frame, do not make it. Say what is missing.
+**Verify a whole lesson in one pass.** After writing a lesson (or before giving a multi-claim
+answer), run:
 
-This applies to lessons handed to `/teach` too: verify the lesson's content against the video
-before the learner sees it.
+```
+yt-tutor verify <id> --lesson <path-to-lesson-file>
+```
+
+It lists every timestamp the lesson cites, with the exact words spoken at that moment and the
+nearest keyframe file to open. Go straight down the report and, for each entry, confirm the lesson's
+claim matches the words there; for a visual claim, open the listed keyframe and look. A number or
+term you assert must appear at the time you cite, not merely nearby. Move the timestamp, fix the
+wording, or drop the claim for anything that does not ground. Do this before the learner sees the
+lesson.
+
+**Ad-hoc single check** (one claim, no file): `yt-tutor transcript <id> --at <ts>` for a spoken
+claim, or `yt-tutor frames <id> --at <ts>` then read the image for a visual one.
+
+If a claim cannot be grounded in the transcript or a frame, do not make it. Say what is missing.
 
 ## Answer style
 
