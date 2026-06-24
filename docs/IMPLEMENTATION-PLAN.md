@@ -9,9 +9,9 @@ alongside (TDD where logic is non-trivial). Phases gate on their acceptance chec
 - [x] Repo + git init
 - [x] `pyproject.toml`, `.gitignore`, `.env.example`
 - [x] `docs/DESIGN.md`, `docs/IMPLEMENTATION-PLAN.md`
-- [ ] `yt_tutor/` package skeleton (`__init__`, `config`, `db`, `cli`)
-- [ ] SQLite schema (`db.py`) + a smoke test
-- [ ] Initial commit
+- [x] `yt_tutor/` package skeleton (`__init__`, `config`, `db`, `cli`)
+- [x] SQLite schema (`db.py`) + a smoke test
+- [x] Initial commit
 
 **Acceptance:** `python -c "import yt_tutor"` works; `yt-tutor --help` lists commands;
 `yt-tutor` creates the DB schema on first run.
@@ -20,17 +20,18 @@ alongside (TDD where logic is non-trivial). Phases gate on their acceptance chec
 
 ## Phase 1 — Ingestion core (transcript-only, no vision)
 Deterministic, resumable spine. No model calls.
-- [ ] `pipeline/metadata.py` — `yt-dlp` extract_info → videos row (title, channel, duration, description, chapters).
-- [ ] `pipeline/captions.py` — fetch + parse subtitles → `transcript_segments` (source=youtube_captions).
-- [ ] `pipeline/frames.py` — `ffmpeg -vf fps=1` → `frame_000001.jpg…`; Pillow dHash; keyframe dedup. **(contribution: `is_new_keyframe`)**
-- [ ] `pipeline/chunks.py` — merge transcript into 15–30s chunks; `embedding_text`; populate `chunks_fts`. **(contribution: boundary policy)**
-- [ ] `pipeline/runner.py` — orchestrate; `ingest_state` ledger; resume; `--force`.
-- [ ] `cli.py` — wire `ingest`, `status`, `list`.
-- [ ] Preflight: ffmpeg/yt-dlp presence checks with actionable errors.
+- [x] `pipeline/metadata.py` — `yt-dlp` extract_info → videos row (title, channel, duration, description, chapters).
+- [x] `pipeline/captions.py` — fetch + parse subtitles → `transcript_segments` (source=youtube_captions).
+- [x] `pipeline/frames.py` — `ffmpeg -vf fps=1` → `frame_000001.jpg…`; Pillow dHash; keyframe dedup. **(decided: threshold 10, anchored on last kept keyframe)**
+- [x] `pipeline/chunks.py` — merge transcript into 15–30s chunks; `embedding_text`; populate `chunks_fts`. **(decided: accumulate + snap to cue boundary)**
+- [x] `pipeline/runner.py` — orchestrate; `ingest_state` ledger; resume; `--force`.
+- [x] `cli.py` — wire `ingest`, `status`, `list`.
+- [x] Preflight: ffmpeg/yt-dlp presence checks with actionable errors.
 
-**Acceptance:** `yt-tutor ingest <url> --no-vision` on a captioned video produces a DB with
+**Acceptance:** ✅ `yt-tutor ingest <url> --no-vision` on a captioned video produces a DB with
 metadata, transcript segments, 1-fps frame rows (keyframes flagged), and chunks. Re-running
-resumes/skips. Tested on a short real video.
+resumes/skips. **Validated on `dQw4w9WgXcQ` → 60 segments, 213 frames / 186 keyframes, 10 chunks.**
+Also fixed: UTF-8 console output (Windows cp1252 crash), private/unavailable-video error path.
 
 ---
 

@@ -193,3 +193,108 @@ def get_step(conn, video_id, step):
 
 def step_done(conn, video_id, step) -> bool:
     return get_step(conn, video_id, step) == "done"
+
+
+# --- transcript ------------------------------------------------------------
+
+def clear_transcript(conn, video_id) -> None:
+    conn.execute("DELETE FROM transcript_segments WHERE video_id=?", (video_id,))
+    conn.commit()
+
+
+def add_transcript_segments(conn, video_id, segments, source) -> None:
+    """segments: iterable of (start_seconds, end_seconds, text)."""
+    conn.executemany(
+        """INSERT INTO transcript_segments (video_id, start_seconds, end_seconds, text, source)
+           VALUES (?,?,?,?,?)""",
+        [(video_id, s, e, t, source) for (s, e, t) in segments],
+    )
+    conn.commit()
+
+
+def get_segments(conn, video_id):
+    return conn.execute(
+        """SELECT start_seconds, end_seconds, text, source FROM transcript_segments
+           WHERE video_id=? ORDER BY start_seconds""", (video_id,)).fetchall()
+
+
+def count_segments(conn, video_id) -> int:
+    return conn.execute(
+        "SELECT COUNT(*) c FROM transcript_segments WHERE video_id=?", (video_id,)).fetchone()["c"]
+
+
+# --- frames ----------------------------------------------------------------
+
+def clear_frames(conn, video_id) -> None:
+    conn.execute("DELETE FROM frames WHERE video_id=?", (video_id,))
+    conn.commit()
+
+
+def insert_frames(conn, rows) -> None:
+    """rows: iterable of dicts with video_id, timestamp_seconds, file_path, phash,
+    is_keyframe, duplicate_of. Idempotent via UNIQUE(video_id, timestamp_seconds)."""
+    conn.executemany(
+        """INSERT OR IGNORE INTO frames
+           (video_id, timestamp_seconds, file_path, phash, is_keyframe, duplicate_of, vision_status)
+           VALUES (:video_id, :timestamp_seconds, :file_path, :phash, :is_keyframe, :duplicate_of, 'pending')""",
+        list(rows),
+    )
+    conn.commit()
+
+
+def get_frames(conn, video_id):
+    return conn.execute(
+        "SELECT * FROM frames WHERE video_id=? ORDER BY timestamp_seconds", (video_id,)).fetchall()
+
+
+def get_keyframes(conn, video_id):
+    return conn.execute(
+        "SELECT * FROM frames WHERE video_id=? AND is_keyframe=1 ORDER BY timestamp_seconds",
+        (video_id,)).fetchall()
+
+
+def count_frames(conn, video_id):
+    """Returns (total_frames, keyframes)."""
+    r = conn.execute(
+        "SELECT COUNT(*) c, COALESCE(SUM(is_keyframe),0) k FROM frames WHERE video_id=?",
+        (video_id,)).fetchone()
+    return r["c"], r["k"]
+
+
+# --- chunks ----------------------------------------------------------------
+
+def clear_chunks(conn, video_id, fts=True) -> None:
+    if fts:
+        try:
+            conn.execute("DELETE FROM chunks_fts WHERE video_id=?", (video_id,))
+        except sqlite3.OperationalError:
+            pass
+    conn.execute("DELETE FROM chunks WHERE video_id=?", (video_id,))
+    conn.commit()
+
+
+def insert_chunks(conn, video_id, chunks, fts=True) -> None:
+    """chunks: iterable of dicts(start_seconds, end_seconds, transcript_text,
+    visual_summary, frame_paths(list), embedding_text)."""
+    for c in chunks:
+        cur = conn.execute(
+            """INSERT INTO chunks
+               (video_id, start_seconds, end_seconds, transcript_text, visual_summary,
+                frame_paths_json, embedding_text)
+               VALUES (?,?,?,?,?,?,?)""",
+            (video_id, c["start_seconds"], c["end_seconds"], c.get("transcript_text"),
+             c.get("visual_summary"), json.dumps(c.get("frame_paths", [])), c.get("embedding_text")),
+        )
+        if fts and c.get("embedding_text"):
+            try:
+                conn.execute(
+                    "INSERT INTO chunks_fts (video_id, chunk_id, text) VALUES (?,?,?)",
+                    (video_id, cur.lastrowid, c["embedding_text"]))
+            except sqlite3.OperationalError:
+                pass
+    conn.commit()
+
+
+def count_chunks(conn, video_id) -> int:
+    return conn.execute(
+        "SELECT COUNT(*) c FROM chunks WHERE video_id=?", (video_id,)).fetchone()["c"]

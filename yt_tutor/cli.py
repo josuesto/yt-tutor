@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from . import __version__, config, db
+from . import __version__, config, db, errors
 
 
 def _open_db():
@@ -48,6 +48,34 @@ def cmd_status(args) -> int:
     return 0
 
 
+def cmd_ingest(args) -> int:
+    config.load_dotenv()
+    from .pipeline import runner
+
+    pcfg = config.get_provider_config()
+    if args.vision:
+        vision = True
+    elif args.no_vision:
+        vision = False
+    else:
+        vision = pcfg.vision_enabled
+
+    try:
+        vid = runner.ingest(
+            args.url, vision=vision, do_teach=args.teach,
+            force=args.force, keyframe_threshold=args.keyframe_threshold,
+        )
+    except errors.YtTutorError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\ninterrupted - re-run `ingest` to resume from the last step.", file=sys.stderr)
+        return 130
+
+    print(f"\ningested {vid}.  Next:  yt-tutor digest {vid} --md")
+    return 0
+
+
 # --- placeholder until the phase lands -------------------------------------
 
 def _todo(phase: int):
@@ -77,7 +105,10 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--teach", action="store_true",
                     help="Also register the video in a teach workspace RESOURCES.md.")
     sp.add_argument("--force", action="store_true", help="Re-run completed steps.")
-    sp.set_defaults(func=_todo(1), _cmd="ingest")
+    sp.add_argument("--keyframe-threshold", type=int, default=None, metavar="N",
+                    help="Hamming-distance threshold for keyframe dedup "
+                         "(default 10; higher = fewer frames analyzed). See docs/MANUAL.md.")
+    sp.set_defaults(func=cmd_ingest, _cmd="ingest")
 
     # query / export commands (built in later phases)
     specs = {
@@ -114,7 +145,18 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _force_utf8() -> None:
+    """Make stdout/stderr UTF-8 so output can never crash on a non-UTF-8 console
+    (e.g. Windows cp1252). errors='replace' guarantees printing is always safe."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+
+
 def main(argv=None) -> int:
+    _force_utf8()
     parser = build_parser()
     args = parser.parse_args(argv)
     if not getattr(args, "func", None):

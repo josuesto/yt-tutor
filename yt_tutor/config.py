@@ -61,6 +61,31 @@ def audio_path(video_id: str) -> Path:
     return video_dir(video_id) / "audio.m4a"
 
 
+# ---- tunable ingestion knobs (all overridable by env; see docs/MANUAL.md) -
+
+def keyframe_threshold() -> int:
+    """Hamming distance (0-64) above which a 1fps frame counts as a NEW keyframe.
+    Default 10. Lower = more keyframes (more vision cost, more fidelity);
+    higher = fewer (cheaper, may miss subtle changes)."""
+    return int(os.environ.get("KEYFRAME_HAMMING_THRESHOLD", "10"))
+
+
+def frames_fps() -> int:
+    """Frames extracted per second. Default 1 (the spec's contract)."""
+    return int(os.environ.get("YT_TUTOR_FPS", "1"))
+
+
+def max_video_height() -> int:
+    """Cap the downloaded video resolution. Higher = better slide/OCR legibility
+    but larger files. Default 720."""
+    return int(os.environ.get("MAX_VIDEO_HEIGHT", "720"))
+
+
+def chunk_target_seconds() -> int:
+    """Target merged-chunk length. Default 20 (kept within the 15-30s band)."""
+    return int(os.environ.get("CHUNK_TARGET_SECONDS", "20"))
+
+
 # ---- provider / model config ---------------------------------------------
 
 def _flag(name: str, default: bool = False) -> bool:
