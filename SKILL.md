@@ -79,6 +79,23 @@ workspace's `RESOURCES.md`, pointing at the saved digest. Then follow the `teach
 build mission-grounded lessons from the video, using its mm:ss timestamps as the cited,
 trusted source (never guess content the digest doesn't contain).
 
+## Verify every claim against the source (before teaching or answering)
+
+This is the cardinal rule, the same one the `teach` skill enforces: never assert anything the
+video does not actually contain, and never cite a timestamp you have not checked. A lesson or
+answer is only as trustworthy as its citations. Before presenting any lesson, summary, or answer:
+
+- For every **spoken** claim with a timestamp, run `yt-tutor transcript <id> --at <ts>` and confirm
+  the words there actually support the claim. Move the timestamp or drop the claim if they do not.
+  A number or term you assert (for example a specific count) must appear at the time you cite, not
+  merely nearby.
+- For every **visual** claim, run `yt-tutor frames <id> --at <ts>` and **read the image** to confirm
+  what is on screen. Never describe a frame you have not opened.
+- If a claim cannot be grounded in the transcript or a frame, do not make it. Say what is missing.
+
+This applies to lessons handed to `/teach` too: verify the lesson's content against the video
+before the learner sees it.
+
 ## Answer style
 
 Cite timestamps and name the source, e.g.: "At 3:12 the speaker explains self-attention

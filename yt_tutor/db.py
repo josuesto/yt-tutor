@@ -227,6 +227,14 @@ def get_segments(conn, video_id):
            WHERE video_id=? ORDER BY start_seconds""", (video_id,)).fetchall()
 
 
+def get_segments_around(conn, video_id, start, end):
+    """Transcript segments overlapping the window [start, end] seconds (for verification)."""
+    return conn.execute(
+        """SELECT start_seconds, end_seconds, text, source FROM transcript_segments
+           WHERE video_id=? AND end_seconds>=? AND start_seconds<=? ORDER BY start_seconds""",
+        (video_id, start, end)).fetchall()
+
+
 def count_segments(conn, video_id) -> int:
     return conn.execute(
         "SELECT COUNT(*) c FROM transcript_segments WHERE video_id=?", (video_id,)).fetchone()["c"]

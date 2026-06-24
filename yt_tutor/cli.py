@@ -286,6 +286,30 @@ def cmd_rechunk(args) -> int:
     return 0
 
 
+def cmd_transcript(args) -> int:
+    """Print the spoken transcript around a timestamp. The verification primitive
+    for spoken claims (the counterpart of `frames --at` for visual claims)."""
+    conn = _open_db()
+    vid = _resolve(conn, args.target)
+    from .util import format_timestamp, parse_timestamp
+    ts = parse_timestamp(args.at)
+    rows = db.get_segments_around(conn, vid, ts - args.window, ts + args.window)
+    if args.json:
+        print(json.dumps([{
+            "start_seconds": r["start_seconds"], "end_seconds": r["end_seconds"],
+            "timestamp": format_timestamp(r["start_seconds"]),
+            "text": r["text"], "source": r["source"],
+        } for r in rows], indent=2))
+        return 0
+    if not rows:
+        print(f"(no transcript near {format_timestamp(ts)})")
+        return 0
+    for r in rows:
+        print(f"[{format_timestamp(r['start_seconds'])}-{format_timestamp(r['end_seconds'])}] "
+              f"({r['source']}) {r['text']}")
+    return 0
+
+
 # --- placeholder until the phase lands -------------------------------------
 
 def _todo(phase: int):
@@ -381,6 +405,15 @@ def build_parser() -> argparse.ArgumentParser:
                        help="Rebuild chunks so recorded visuals flow into digest + search.")
     s.add_argument("target", metavar="video|url")
     s.set_defaults(func=cmd_rechunk, _cmd="rechunk")
+
+    s = sub.add_parser("transcript",
+                       help="Print the spoken transcript around a timestamp (verify a claim).")
+    s.add_argument("target", metavar="video|url")
+    s.add_argument("--at", required=True, help="Timestamp, e.g. 3:19 or 199.")
+    s.add_argument("--window", type=int, default=8, metavar="SEC",
+                   help="Seconds around --at to include (default 8).")
+    s.add_argument("--json", action="store_true")
+    s.set_defaults(func=cmd_transcript, _cmd="transcript")
 
     return p
 

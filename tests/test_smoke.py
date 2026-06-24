@@ -45,3 +45,13 @@ def test_frame_timestamp_is_unique(tmp_path):
     except sqlite3.IntegrityError:
         raised = True
     assert raised
+
+
+def test_segments_around_window(tmp_path):
+    conn = db.connect(tmp_path / "t.db")
+    db.init_db(conn)
+    db.upsert_video(conn, id="v", youtube_url="u")
+    db.add_transcript_segments(
+        conn, "v", [(0, 5, "a"), (5, 10, "b"), (10, 15, "c"), (20, 25, "d")], "youtube_captions")
+    got = [r["text"] for r in db.get_segments_around(conn, "v", 4, 11)]
+    assert got == ["a", "b", "c"]   # only segments overlapping [4, 11]
