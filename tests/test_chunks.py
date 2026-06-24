@@ -25,3 +25,17 @@ def test_chapter_titles_enter_embedding_text():
     chapters = [{"title": "Overview", "start": 0, "end": 100}]
     chunks = build_chunks(segs, [], target_seconds=5, duration=10, chapters=chapters)
     assert "[Overview]" in chunks[0]["embedding_text"]
+
+
+def test_keyframe_visuals_aggregate_into_chunk_and_search_text():
+    segs = [(0, 20, "the speaker explains attention")]
+    # keyframe 3-tuple carries its visual summary
+    kfs = [(3, "a.jpg", "a slide showing a query key value diagram")]
+    chunks = build_chunks(segs, kfs, target_seconds=20, duration=20)
+    assert chunks[0]["visual_summary"] == "a slide showing a query key value diagram"
+    # both speech and visuals land in the searchable embedding_text
+    assert "attention" in chunks[0]["embedding_text"]
+    assert "query key value" in chunks[0]["embedding_text"]
+    # backward-compatible: 2-tuples (no vision) still work, visual_summary stays None
+    plain = build_chunks(segs, [(3, "a.jpg")], target_seconds=20, duration=20)
+    assert plain[0]["visual_summary"] is None

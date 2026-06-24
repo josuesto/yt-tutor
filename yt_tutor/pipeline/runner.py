@@ -113,16 +113,16 @@ def _frames_stage(conn, vid, info, threshold, force, progress):
 def _vision_stage(conn, vid, vision, force, progress):
     if not vision:
         return
-    try:
-        from . import vision as vision_mod  # Phase 3
-    except ImportError:
-        progress("vision: not available yet (arrives in Phase 3) - skipping.")
-        return
     if not force and db.step_done(conn, vid, "vision"):
         return
-    progress("vision: analyzing keyframes...")
-    vision_mod.run(conn, vid, progress=progress)
-    db.set_step(conn, vid, "vision", "done")
+    from . import vision as vision_mod  # Phase 3
+    progress("vision: analyzing keyframes (paid)...")
+    try:
+        vision_mod.run(conn, vid, progress=progress)
+        db.set_step(conn, vid, "vision", "done")
+    except errors.YtTutorError as e:
+        # vision problems (missing key/package) never break the free pipeline
+        progress(f"vision: skipped - {e}")
 
 
 def _chunks_stage(conn, vid, meta, force, progress):
@@ -132,7 +132,8 @@ def _chunks_stage(conn, vid, meta, force, progress):
     fts = db.has_fts5(conn)
     db.clear_chunks(conn, vid, fts=fts)
     segs = [(r["start_seconds"], r["end_seconds"], r["text"]) for r in db.get_segments(conn, vid)]
-    kfs = [(r["timestamp_seconds"], r["file_path"]) for r in db.get_keyframes(conn, vid)]
+    kfs = [(r["timestamp_seconds"], r["file_path"], r["scene_description"] or r["vision_summary"])
+           for r in db.get_keyframes(conn, vid)]
     chs = chunks_mod.build_chunks(segs, kfs, duration=meta["duration_seconds"],
                                   chapters=meta["chapters"])
     db.insert_chunks(conn, vid, chs, fts=fts)

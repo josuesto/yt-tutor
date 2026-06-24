@@ -47,15 +47,17 @@ Without the extra, a clear non-crashing message.
 ---
 
 ## Phase 3 — Eager keyframe vision (opt-in)
-- [ ] `providers/base.py` — `VisionProvider.analyze_keyframe(image_path, ts) -> FrameAnalysis`.
-- [ ] `providers/anthropic.py` — tool-use forces the frame JSON schema; batch; prompt caching. **(consult `claude-api` skill for model id + call shape)**
-- [ ] `providers/{openai,gemini,ollama}.py` — alternates.
-- [ ] `providers/__init__.py` — env-driven registry.
-- [ ] `pipeline/vision.py` — analyze keyframes; write structured fields; dupes → `reused`; retry/backoff; resumable cache.
-- [ ] `cli.py` — `--vision/--no-vision`; honor `VISION_ENABLED`.
+- [x] `providers/base.py` — `VisionProvider.analyze_keyframe(image_path, ts)` + `FRAME_SCHEMA`.
+- [x] `providers/anthropic.py` — forced tool-use (Haiku-class `claude-haiku-4-5`) guarantees the frame JSON. (model id + call shape confirmed via `claude-api` skill.)
+- [x] `providers/{openai,gemini,ollama}.py` — alternates (OpenAI structured outputs; Gemini/Ollama experimental).
+- [x] `providers/__init__.py` — env-driven registry (`get_vision_provider`).
+- [x] `pipeline/vision.py` — analyze keyframes; write structured fields; dupes → `reused`; per-frame failure isolation; resumable cache. Visuals aggregate into chunk `visual_summary` + `embedding_text`.
+- [x] `cli.py` — `--vision/--no-vision`; honor `VISION_ENABLED`. Vision is non-fatal.
 
-**Acceptance:** `yt-tutor ingest <url> --vision` populates frame vision fields for keyframes
-only; re-run re-pays nothing; a forced API error leaves the ingest resumable.
+**Acceptance:** ✅ Pipeline unit-tested with a fake provider: analyzes keyframes only, re-run
+re-pays nothing, per-frame errors isolate to `failed`, duplicates → `reused`. `--vision` with
+no key degrades gracefully (warns + continues). Live paid call needs an API key (not exercised).
+5 new tests (30 total).
 
 ---
 

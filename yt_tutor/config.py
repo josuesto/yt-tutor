@@ -116,7 +116,7 @@ def get_provider_config() -> ProviderConfig:
         openai_api_key=os.environ.get("OPENAI_API_KEY") or None,
         gemini_api_key=os.environ.get("GEMINI_API_KEY") or None,
         # Defaults are validated against the claude-api skill when the adapter is built.
-        anthropic_vision_model=os.environ.get("ANTHROPIC_VISION_MODEL", "claude-haiku-4-5-20251001"),
+        anthropic_vision_model=os.environ.get("ANTHROPIC_VISION_MODEL", "claude-haiku-4-5"),
         openai_vision_model=os.environ.get("OPENAI_VISION_MODEL", "gpt-4o-mini"),
         gemini_vision_model=os.environ.get("GEMINI_VISION_MODEL", "gemini-2.0-flash"),
         ollama_vision_model=os.environ.get("OLLAMA_VISION_MODEL", "llava"),

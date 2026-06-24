@@ -318,3 +318,33 @@ def upsert_summary(conn, video_id, tl_dr, detailed_md) -> None:
 
 def get_summary(conn, video_id):
     return conn.execute("SELECT * FROM summaries WHERE video_id=?", (video_id,)).fetchone()
+
+
+# --- vision (per-keyframe) -------------------------------------------------
+
+def update_frame_vision(conn, frame_id, *, status, scene_description=None, visible_text=None,
+                        objects=None, people=None, screen_or_slide_summary=None,
+                        notable_details=None, vision_summary=None) -> None:
+    conn.execute(
+        """UPDATE frames SET
+             vision_status=?, scene_description=?, visible_text=?, detected_objects_json=?,
+             people=?, screen_or_slide_summary=?, notable_details_json=?, vision_summary=?
+           WHERE id=?""",
+        (status, scene_description,
+         json.dumps(visible_text) if visible_text is not None else None,
+         json.dumps(objects) if objects is not None else None,
+         people, screen_or_slide_summary,
+         json.dumps(notable_details) if notable_details is not None else None,
+         vision_summary, frame_id),
+    )
+    conn.commit()
+
+
+def mark_duplicates_reused(conn, video_id) -> None:
+    """Non-keyframe seconds inherit their keyframe's analysis; mark them reused."""
+    conn.execute(
+        """UPDATE frames SET vision_status='reused'
+           WHERE video_id=? AND is_keyframe=0 AND vision_status='pending'""",
+        (video_id,),
+    )
+    conn.commit()

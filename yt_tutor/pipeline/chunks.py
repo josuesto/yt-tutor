@@ -37,15 +37,20 @@ def build_chunks(segments, keyframes, *, target_seconds=None, duration=None, cha
 
     chap = chapters or []
     for c in chunks:
-        c["frame_paths"] = [fp for (ts, fp) in keyframes
-                            if c["start_seconds"] <= ts < c["end_seconds"]]
+        # keyframes are (ts, file_path) or (ts, file_path, visual_text)
+        in_window = [kf for kf in keyframes
+                     if c["start_seconds"] <= kf[0] < c["end_seconds"]]
+        c["frame_paths"] = [kf[1] for kf in in_window]
+        visuals = [kf[2] for kf in in_window if len(kf) > 2 and kf[2]]
+        c["visual_summary"] = " ".join(v.strip() for v in visuals) or None
         title = _chapter_for(chap, c["start_seconds"])
         parts = []
         if title:
             parts.append(f"[{title}]")
         if c["transcript_text"]:
             parts.append(c["transcript_text"])
-        c["visual_summary"] = None
+        if c["visual_summary"]:
+            parts.append(c["visual_summary"])
         c["embedding_text"] = " ".join(parts).strip() or None
     return chunks
 
