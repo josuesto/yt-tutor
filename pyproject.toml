@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "yt-tutor"
+version = "0.1.0"
+description = "Ingest a YouTube video (speech + visuals, timestamped) so an AI agent can be taught it and teach it back to you, citing timestamps."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Josue Soto" }]
+keywords = ["youtube", "transcript", "vision", "rag", "agent", "skill", "notebooklm", "yt-dlp", "whisper"]
+
+# Core deps are deliberately tiny so the tool installs fast.
+# Everything expensive (whisper model, vision SDKs) is an opt-in extra.
+dependencies = [
+    "yt-dlp>=2025.1.1",  # metadata, subtitles, audio  (imported as a library)
+    "Pillow>=10.0.0",    # frame decode + perceptual hashing for keyframe dedup
+]
+
+[project.optional-dependencies]
+whisper = ["faster-whisper>=1.0.0"]          # local STT fallback (captions come first)
+anthropic = ["anthropic>=0.40.0"]            # default vision provider
+openai = ["openai>=1.50.0"]                  # alt vision/reasoning provider
+gemini = ["google-generativeai>=0.8.0"]      # alt vision provider (cheap)
+dev = ["pytest>=8.0.0", "ruff>=0.6.0"]
+all = [
+    "faster-whisper>=1.0.0",
+    "anthropic>=0.40.0",
+    "openai>=1.50.0",
+    "google-generativeai>=0.8.0",
+]
+
+[project.scripts]
+yt-tutor = "yt_tutor.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/josuesto/yt-tutor"
+Issues = "https://github.com/josuesto/yt-tutor/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["yt_tutor"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

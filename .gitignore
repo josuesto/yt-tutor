@@ -1,0 +1,33 @@
+# ---- yt-tutor data (never commit ingested videos / frames / db) ----
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# ---- secrets ----
+.env
+.env.local
+
+# ---- python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# ---- model caches (faster-whisper downloads) ----
+.cache/
+models/
+
+# ---- os / editor ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
