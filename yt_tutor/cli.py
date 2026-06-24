@@ -186,6 +186,26 @@ def cmd_resource(args) -> int:
     return 0
 
 
+def cmd_estimate(args) -> int:
+    config.load_dotenv()
+    from . import estimate as est
+    from .util import format_timestamp
+    try:
+        e = est.estimate(args.target)
+    except errors.YtTutorError as ex:
+        print(f"error: {ex}", file=sys.stderr)
+        return 1
+    pcfg = config.get_provider_config()
+    lo, hi = est.cost_range(e["keyframes_low"], e["keyframes_high"], pcfg.vision_provider)
+    print(f"{e['title']}  ({format_timestamp(e['duration_seconds'])})")
+    print(f"  1fps frames:                 {e['frames']}")
+    print(f"  est. keyframes to analyze:   {e['keyframes_low']}-{e['keyframes_high']}")
+    print(f"  est. vision cost ({pcfg.vision_provider}):  ${lo:.2f}-${hi:.2f}")
+    print("  transcript + frames are free; this cost applies only to --vision.")
+    print("  note: fast-cut/high-motion video can exceed the high end.")
+    return 0
+
+
 # --- placeholder until the phase lands -------------------------------------
 
 def _todo(phase: int):
@@ -223,6 +243,7 @@ def build_parser() -> argparse.ArgumentParser:
     handlers = {
         "digest": cmd_digest, "summary": cmd_summary, "search": cmd_search,
         "ask": cmd_ask, "frames": cmd_frames, "resource": cmd_resource,
+        "estimate": cmd_estimate,
     }
     specs = {
         "digest": (4, "Emit the timestamped transcript + visual digest."),

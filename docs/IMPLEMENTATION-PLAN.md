@@ -88,10 +88,10 @@ teach workspace. 3 new tests (24 total).
 ---
 
 ## Phase 6 — Estimate, errors, README, test pass
-- [ ] `cli.py` — `estimate <url>`: probe duration + dedup ratio heuristic → predicted
-      keyframe count × provider price → cost preview.
-- [ ] Harden error paths (private/age-restricted/unavailable/partial).
-- [ ] Finalize `README.md` (install, quickstart, providers, teach integration, troubleshooting).
-- [ ] `pytest` pass; `ruff` clean.
+- [x] `cli.py` — `estimate <url>`: duration + dedup heuristic → keyframe range × provider price → cost preview (with a high-motion caveat).
+- [x] Harden error paths (private/age-restricted/unavailable + resumable partials). `_friendly` mapping tested.
+- [x] Finalize `README.md` (from-source install + skill-install, quickstart, providers, teach integration, troubleshooting).
+- [x] `pytest` pass (33) + `ruff` clean; `.gitattributes` normalizes line endings.
 
-**Acceptance:** all 10 acceptance criteria in `DESIGN.md §10` demonstrably met.
+**Acceptance:** ✅ All 10 acceptance criteria in `DESIGN.md §10` met. `estimate` previews
+$0.03-$0.15 for a 3.5-min video; unavailable videos return a clean message + non-zero exit.

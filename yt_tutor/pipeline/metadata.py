@@ -52,7 +52,7 @@ def _friendly(message: str) -> str:
     m = message.lower()
     if "private" in m:
         return "This video is private and can't be ingested."
-    if "age" in m and "restrict" in m:
+    if "age" in m and ("restrict" in m or "confirm your age" in m or "sign in to confirm" in m):
         return "This video is age-restricted and can't be ingested without sign-in."
     if "members-only" in m or "members only" in m:
         return "This is a members-only video and can't be ingested."

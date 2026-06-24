@@ -37,13 +37,24 @@ Requires **Python 3.10+**, **ffmpeg**, and **yt-dlp** on your PATH.
 
 ```bash
 # ffmpeg:  https://ffmpeg.org/download.html   (or: winget install Gyan.FFmpeg)
-pip install yt-tutor                 # core (transcript-only, zero keys)
-pip install "yt-tutor[whisper]"      # + local speech-to-text fallback
-pip install "yt-tutor[anthropic]"    # + the default vision provider
-pip install "yt-tutor[all]"          # everything
+git clone https://github.com/josuesto/yt-tutor && cd yt-tutor
+pip install -e .                 # core (transcript-only, zero keys)
+pip install -e ".[whisper]"      # + local speech-to-text fallback
+pip install -e ".[anthropic]"    # + the default vision provider
+pip install -e ".[all]"          # everything
 ```
 
 Copy `.env.example` → `.env` and fill in keys **only if** you enable the vision pass.
+
+### Install as a Claude Code skill
+
+`yt-tutor` ships a root `SKILL.md`, so linking the repo into your skills directory makes it
+a `/`-invokable skill that drives the CLI for you:
+
+```bash
+ln -s "$PWD" ~/.claude/skills/yt-tutor          # macOS / Linux (from the cloned repo)
+```
+On Windows, copy the folder to `%USERPROFILE%\.claude\skills\yt-tutor`.
 
 ---
 
