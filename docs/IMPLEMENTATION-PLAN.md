@@ -36,12 +36,13 @@ Also fixed: UTF-8 console output (Windows cp1252 crash), private/unavailable-vid
 ---
 
 ## Phase 2 — Whisper fallback
-- [ ] `pipeline/audio.py` — `yt-dlp` bestaudio → `data/videos/{id}/audio.m4a`.
-- [ ] `pipeline/transcribe.py` — `faster-whisper` → `transcript_segments` (source=whisper).
-- [ ] `runner` routes to whisper only when captions are absent + extra installed; else clear message.
+- [x] `pipeline/audio.py`: reuse the source video via ffmpeg, else download bestaudio with yt-dlp.
+- [x] `pipeline/transcribe.py`: `faster-whisper` (CTranslate2, CPU int8) into `transcript_segments` (source=whisper).
+- [x] `runner` runs whisper only when captions are absent and the extra is installed; otherwise a clear message.
 
-**Acceptance:** a caption-less video transcribes via whisper when `[whisper]` is installed;
-without it, a clear, non-crashing message.
+**Acceptance:** ✅ With `faster-whisper` installed, audio transcribes locally and free.
+Validated live: the tiny model produced 25 timestamped segments from the on-disk audio.
+Without the extra, a clear non-crashing message.
 
 ---
 

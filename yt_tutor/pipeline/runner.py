@@ -75,16 +75,16 @@ def _transcript_stage(conn, vid, info, force, progress):
         db.add_transcript_segments(conn, vid, segs, source)
         progress(f"transcript: {len(segs)} caption segments ({source})")
     else:
+        from . import transcribe  # Phase 2 (optional extra)
         segs2 = None
-        try:
-            from . import transcribe  # Phase 2 (optional extra)
+        if transcribe.available():
             progress("transcript: no captions - transcribing with local whisper (free)...")
             segs2 = transcribe.maybe_whisper(info, vid)
-        except ImportError:
-            pass
         if segs2:
             db.add_transcript_segments(conn, vid, segs2, "whisper")
             progress(f"transcript: {len(segs2)} segments (whisper, free local)")
+        elif transcribe.available():
+            progress("transcript: whisper found no speech (silent or music-only video).")
         else:
             progress("transcript: no captions found - install `yt-tutor[whisper]` "
                      "for free local transcription.")
