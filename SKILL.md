@@ -31,6 +31,19 @@ transcript plus a per-section frame index — reading it is how the video become
 For a quick orientation, run `yt-tutor summary <id>`. For very long videos that exceed
 context, skip the full digest and use search/ask (step 3) instead.
 
+### Choose how to learn it (ask once the digest is loaded)
+
+Ask the user, as a **single-select** question, how they want to engage with the video:
+
+- **Talk about it here** (default) — stay in this agent: ask anything and get answers with
+  `mm:ss` citations, pulling frames as needed. Best for exploring, summarizing, spot questions.
+- **Teach it to me** — hand off to the `/teach` skill, which builds mission-grounded lessons
+  from the video over time (step 4). Best when the goal is to genuinely learn the topic.
+
+Honor the answer. If the user has no preference, default to talking here, and offer `/teach`
+again the moment the conversation turns into wanting to actually learn the material. Do not
+force `/teach`: a quick question should never require setting up a lesson workspace.
+
 ### 3. Answer questions — always cite timestamps
 - Spoken content: `yt-tutor ask <id> "<question>" --json` returns the most relevant
   timestamped evidence, each labeled speech and/or visual. Answer using only that
