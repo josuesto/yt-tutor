@@ -5,6 +5,7 @@
 *.jpg binary
 *.jpeg binary
 *.png binary
+*.gif binary
 *.webp binary
 *.db binary
 *.mp4 binary

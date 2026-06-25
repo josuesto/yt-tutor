@@ -41,7 +41,8 @@ All notable changes to this project are documented here. The format follows
 - Install is from GitHub (`pipx install "git+https://github.com/josuesto/yt-tutor"`); not on PyPI yet.
 - Clarified that frames are *captured* at 1 fps and the agent reads keyframes on demand, rather than
   implying automatic full visual analysis.
-- Added a 60-second walkthrough (`docs/DEMO.md`) and a `vhs` tape (`docs/demo.tape`) for a GIF.
+- Added a demo GIF in the README (`docs/demo.gif`), generated deterministically from real output
+  by `scripts/make_demo_gif.py` (Pillow only), plus a `docs/DEMO.md` walkthrough and a `vhs` tape.
 
 ## [0.1.0] - 2026-06-24
 

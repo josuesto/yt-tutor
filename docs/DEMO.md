@@ -3,8 +3,12 @@
 A full pass on a real 5-minute talk: ingest it, know it, ask it, look at a slide, record what
 you see, and get a cited answer. Every output below is real (CNCF lightning talk `jCz9QPrJ6Eo`).
 
-> Want the animated version? Render it with [`vhs`](https://github.com/charmbracelet/vhs):
-> `vhs docs/demo.tape` produces `demo.gif`. (No recorder is bundled; the tape is the script.)
+![yt-tutor demo](demo.gif)
+
+> The clip is generated deterministically from these real outputs by
+> [`scripts/make_demo_gif.py`](../scripts/make_demo_gif.py) (Pillow only). A
+> [`vhs`](https://github.com/charmbracelet/vhs) tape (`demo.tape`) is also included for a
+> live-terminal recording.
 
 ## 1. Ingest (free, no API key)
 

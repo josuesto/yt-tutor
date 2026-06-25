@@ -6,6 +6,8 @@
 
 **Turn any YouTube video into something an AI agent can be *taught*, then have it teach the video back to you.**
 
+![yt-tutor in action: ingest a talk, ask it, read a slide, search a slide's words](docs/demo.gif)
+
 `yt-tutor` ingests a YouTube video into a local, timestamped knowledge store that combines
 the **spoken transcript** with **the frames shown on screen** (captured at 1 frame/second, then
 collapsed to keyframes). For a visual question the agent **reads the relevant keyframe itself**;
@@ -106,10 +108,10 @@ yt-tutor ingest  "https://youtu.be/..." --vision
 
 ## Demo
 
-A 60-second walkthrough with real output (ingest, know it, ask it, read a slide, record what you
-see, verify) is in [`docs/DEMO.md`](docs/DEMO.md). For the animated version, render
-[`docs/demo.tape`](docs/demo.tape) with [`vhs`](https://github.com/charmbracelet/vhs):
-`vhs docs/demo.tape` produces `demo.gif`.
+The clip at the top is a real session. Regenerate it any time with
+`python scripts/make_demo_gif.py` (Pillow only, no recorder needed). A step-by-step walkthrough
+with the full command output is in [`docs/DEMO.md`](docs/DEMO.md). A [`vhs`](https://github.com/charmbracelet/vhs)
+tape ([`docs/demo.tape`](docs/demo.tape)) is also included for a live-terminal recording.
 
 ---
 
