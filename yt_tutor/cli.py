@@ -276,7 +276,7 @@ def cmd_rechunk(args) -> int:
     fts = db.has_fts5(conn)
     db.clear_chunks(conn, vid, fts=fts)
     segs = [(r["start_seconds"], r["end_seconds"], r["text"]) for r in db.get_segments(conn, vid)]
-    kfs = [(r["timestamp_seconds"], r["file_path"], r["scene_description"] or r["vision_summary"])
+    kfs = [(r["timestamp_seconds"], r["file_path"], *db.visual_texts_for_frame(r))
            for r in db.get_keyframes(conn, vid)]
     chapters = json.loads(v["chapters_json"]) if v["chapters_json"] else None
     chs = chunks_mod.build_chunks(segs, kfs, duration=v["duration_seconds"], chapters=chapters)

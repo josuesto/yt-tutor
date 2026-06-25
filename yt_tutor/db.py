@@ -272,6 +272,48 @@ def get_keyframes(conn, video_id):
         (video_id,)).fetchall()
 
 
+def visual_texts_for_frame(row):
+    """Two views of a keyframe's recorded vision, for chunk building.
+
+    Returns (display_summary, index_text):
+    - display_summary: one concise line for the digest (scene/slide summary).
+    - index_text: everything searchable, including the OCR'd on-screen text
+      (`visible_text`) and `notable_details`, so a slide's actual words become
+      findable. This is the difference between describing a slide and indexing it.
+    """
+    def _val(key):
+        try:
+            return (row[key] or "").strip()
+        except (IndexError, KeyError):
+            return ""
+
+    def _list(key):
+        try:
+            raw = row[key]
+        except (IndexError, KeyError):
+            return []
+        if not raw:
+            return []
+        try:
+            return [str(x) for x in json.loads(raw)]
+        except (TypeError, ValueError):
+            return []
+
+    scene = _val("scene_description")
+    slide = _val("screen_or_slide_summary")
+    display = scene or slide or _val("vision_summary") or None
+
+    parts = [p for p in (scene, slide) if p]
+    visible = _list("visible_text")
+    if visible:
+        parts.append(" ".join(visible))
+    notable = _list("notable_details_json")
+    if notable:
+        parts.append(" ".join(notable))
+    index_text = " ".join(parts).strip() or display
+    return display, index_text
+
+
 def count_frames(conn, video_id):
     """Returns (total_frames, keyframes)."""
     r = conn.execute(

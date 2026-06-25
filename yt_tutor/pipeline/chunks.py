@@ -44,20 +44,25 @@ def build_chunks(segments, keyframes, *, target_seconds=None, duration=None, cha
 
     chap = chapters or []
     for c in chunks:
-        # keyframes are (ts, file_path) or (ts, file_path, visual_text)
+        # keyframes are (ts, file_path), (ts, file_path, display_summary), or
+        # (ts, file_path, display_summary, index_text). The display summary is the
+        # concise line shown in the digest; the index text is the rich, searchable
+        # version (it carries the OCR'd on-screen words). They differ for slides.
         in_window = [kf for kf in keyframes
                      if c["start_seconds"] <= kf[0] < c["end_seconds"]]
         c["frame_paths"] = [kf[1] for kf in in_window]
-        visuals = [kf[2] for kf in in_window if len(kf) > 2 and kf[2]]
-        c["visual_summary"] = " ".join(v.strip() for v in visuals) or None
+        summaries = [kf[2] for kf in in_window if len(kf) > 2 and kf[2]]
+        index_texts = [(kf[3] if len(kf) > 3 and kf[3] else kf[2])
+                       for kf in in_window if len(kf) > 2 and (kf[2] or (len(kf) > 3 and kf[3]))]
+        c["visual_summary"] = " ".join(v.strip() for v in summaries) or None
         title = _chapter_for(chap, c["start_seconds"])
         parts = []
         if title:
             parts.append(f"[{title}]")
         if c["transcript_text"]:
             parts.append(c["transcript_text"])
-        if c["visual_summary"]:
-            parts.append(c["visual_summary"])
+        if index_texts:
+            parts.append(" ".join(t.strip() for t in index_texts))
         c["embedding_text"] = " ".join(parts).strip() or None
     return chunks
 

@@ -41,6 +41,21 @@ def test_keyframe_visuals_aggregate_into_chunk_and_search_text():
     assert plain[0]["visual_summary"] is None
 
 
+def test_4tuple_index_text_is_searchable_but_display_summary_stays_concise():
+    # A slide: the display summary is one line; the index text carries the OCR'd bullets.
+    segs = [(0, 20, "what info will I need")]
+    display = "a slide titled Q3 What info will I need"
+    index = display + " Personal details Talk Abstract accessibility requirements github repos"
+    kfs = [(3, "q3.jpg", display, index)]
+    chunks = build_chunks(segs, kfs, target_seconds=20, duration=20)
+    # the digest's visual_summary is the concise line, NOT the full OCR dump
+    assert chunks[0]["visual_summary"] == display
+    assert "accessibility requirements" not in chunks[0]["visual_summary"]
+    # but the OCR'd on-screen words ARE searchable via embedding_text
+    assert "accessibility requirements" in chunks[0]["embedding_text"]
+    assert "github repos" in chunks[0]["embedding_text"]
+
+
 def test_edges_extend_to_zero_and_duration():
     # captions start at 4s; a title-card keyframe at 0:01 must not be orphaned
     segs = [(4, 24, "starts at four seconds")]

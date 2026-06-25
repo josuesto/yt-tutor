@@ -132,7 +132,7 @@ def _chunks_stage(conn, vid, meta, force, progress):
     fts = db.has_fts5(conn)
     db.clear_chunks(conn, vid, fts=fts)
     segs = [(r["start_seconds"], r["end_seconds"], r["text"]) for r in db.get_segments(conn, vid)]
-    kfs = [(r["timestamp_seconds"], r["file_path"], r["scene_description"] or r["vision_summary"])
+    kfs = [(r["timestamp_seconds"], r["file_path"], *db.visual_texts_for_frame(r))
            for r in db.get_keyframes(conn, vid)]
     chs = chunks_mod.build_chunks(segs, kfs, duration=meta["duration_seconds"],
                                   chapters=meta["chapters"])
