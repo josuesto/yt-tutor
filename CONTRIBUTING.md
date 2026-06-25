@@ -4,7 +4,8 @@ Thanks for your interest. yt-tutor is small on purpose, so contributions are eas
 
 ## Dev setup
 
-Requires Python 3.10+, with `ffmpeg` and `yt-dlp` on your PATH for the ingest pipeline.
+Requires Python 3.10+ and `ffmpeg` on your PATH for the ingest pipeline. `yt-dlp` is a Python
+dependency and installs with the package (it is used as a library, not the CLI).
 
 ```bash
 git clone https://github.com/josuesto/yt-tutor && cd yt-tutor

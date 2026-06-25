@@ -41,7 +41,8 @@ couple hundred.
 
 ## Install
 
-Requires **Python 3.10+**, **ffmpeg**, and **yt-dlp** on your PATH.
+Requires **Python 3.10+** and **ffmpeg** on your PATH. `yt-dlp` is a Python dependency and
+installs automatically with the package, so you do not need it on PATH separately.
 
 Not on PyPI yet. Install straight from GitHub:
 
