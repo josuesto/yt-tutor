@@ -35,7 +35,7 @@ Consequences:
 | Vision source | **The agent running the skill is the vision** — it reads keyframes and records analysis via `set-vision` (free), folded in by `rechunk`. A paid provider `--vision` pass is the headless-only fallback. | "Vision comes from the model running the skill." |
 | Transcription | **Captions first** (yt-dlp); **faster-whisper** as an optional, recommended fallback. | Most videos have captions; whisper rarely runs, so it stays an opt-in extra. |
 | Default model | **Anthropic Claude** (Haiku-class for vision), behind an adapter; OpenAI/Gemini/Ollama swappable by env. | User's stated preference; adapter keeps it provider-agnostic for publishing. |
-| Q&A / teaching | **Hand off to the user's `teach` skill** by registering the video as a trusted **resource**; ship a standalone teaching `SKILL.md` for users without `teach`. | "Teaching method = the skill we have." |
+| Q&A / teaching | **Teach natively inside `yt-tutor`'s own `SKILL.md`** — no hand-off. The video digest is the grounded resource; mm:ss + keyframes are the citations. *(Revised 2026-06-24: originally a hand-off to the user's `teach` skill. Removed so the experience is seamless from one link with no extra skill or workspace. An optional `resource` export to an external `teach` workspace remains for power users.)* | "It should be seamless just by giving it the YouTube link." |
 | Long-video Q&A | Full digest loaded into context when it fits; **SQLite FTS5** retrieval fallback for very long videos. | NotebookLM-style "knows the whole video"; degrades gracefully. |
 
 ## 4. Architecture
@@ -77,23 +77,30 @@ yt_tutor/
 
 Documents, for any agent: on a URL → `ingest`; to teach → load the `digest`, teach in the
 learning style citing `mm:ss`, label speech vs visual, pull keyframes via `frames --at`
-for visual questions, `search` for long videos. When a `teach` workspace is present, run
-`resource` to register the video and hand off to `/teach`.
+for visual questions, `search` for long videos. Teaching is native — the agent builds the
+lessons itself, grounded in the digest. No external skill or workspace is involved.
 
-## 5. The `teach` skill seam (key integration)
+## 5. Native teaching (the headline experience)
 
-The user's `~/.claude/skills/teach` workspace grounds all lessons in `RESOURCES.md` and
-forbids parametric guessing. `yt-tutor` feeds that contract:
+*Revised 2026-06-24: this was originally a hand-off to the user's `teach` skill. It is now
+native, so the whole experience is "give the link, get taught" with nothing else to install.*
 
-1. `yt-tutor ingest <url> --teach` ingests the video AND
-2. writes a `## Knowledge` bullet into the workspace `RESOURCES.md` (per `RESOURCES-FORMAT.md`):
-   `- [Video: {title} — {channel}]({url})` + an annotation (what it covers / when to reach for it)
-   + a pointer to the local digest file (`data/videos/{id}/digest.md`).
-3. `/teach` then builds mission-grounded lessons from the video, citing `mm:ss` and pulling
-   keyframes. `yt-tutor` is the *knowledge* arm; `teach` is the *pedagogy* arm.
+The pedagogy of the `teach` skill is folded directly into `yt-tutor`'s `SKILL.md`, with one
+clean substitution: where `teach` grounds lessons in a `RESOURCES.md` and forbids parametric
+guessing, `yt-tutor` grounds them in the **video digest** and forbids anything the video does
+not contain. The agent:
 
-The digest is the hand-off interface, so this works whether the agent is `/teach`, Claude
-Code, or Cursor Composer.
+1. loads the digest to know the video, then teaches one tightly-scoped idea per lesson;
+2. saves each lesson as a self-contained HTML file under `data/videos/{id}/lessons/`, citing
+   every claim to a clickable `mm:ss` link and **embedding the actual keyframes** (from
+   `frames --at`) rather than describing them;
+3. verifies every cited timestamp against the source (`verify --lesson`) before the learner
+   sees it.
+
+No workspace setup, no second skill. **Optional export:** for users who *do* run a separate
+`teach` skill, `yt-tutor ingest <url> --teach` (or `resource <id>`) still writes a `## Knowledge`
+bullet into that workspace's `RESOURCES.md` pointing at the digest — but it is off the default
+path and not required.
 
 ## 6. Data model (SQLite)
 
@@ -150,7 +157,8 @@ mid-ingest resumes from the last completed step. `--force` re-runs a stage.
 ## 9. v1 scope vs deferred (v2)
 
 **v1:** ingest, deterministic store, 1fps + keyframe dedup, eager vision (opt-in), chunks,
-detailed summary, digest export, FTS5 search, `resource` handoff to `teach`, `SKILL.md`,
+detailed summary, digest export, FTS5 search, native teaching in `SKILL.md` (+ optional
+`resource` export), `SKILL.md`,
 cost `estimate`, resumability, README.
 
 **Deferred (v2):** web UI + player, embeddings/hybrid retrieval, OCR-only pre-pass,

@@ -61,11 +61,14 @@ One pass: for every timestamp a lesson cites (or each `--at`), print the words s
 nearest keyframe to open. Go down the report, confirm each claim against the source, and fix the
 timestamp or drop the claim for anything that does not ground.
 
-## Teach handoff
+## Optional: export to an external teach workspace
+
+Teaching is native to this tool (see `SKILL.md`), so you do not need this. It exists only for
+power users who run a separate `teach` skill and want the video registered there too.
 
 ### `resource <id|url> [--workspace DIR]`
-Register the video as a `## Knowledge` entry in `<workspace>/RESOURCES.md` (default: cwd) for the
-`teach` skill. Idempotent.
+Register the video as a `## Knowledge` entry in `<workspace>/RESOURCES.md` (default: cwd) for an
+external `teach` skill. Idempotent. (`ingest --teach` runs this automatically after ingesting.)
 
 ## Library and cost
 

@@ -52,13 +52,20 @@ The model running the skill is the vision system. For a visual question it reads
 frames, records what it sees with `set-vision --at <ts> --file <json>`, then `rechunk` folds those
 notes into the digest and search. The paid provider `--vision` pass is a headless-only fallback.
 
-## The teach loop (the headline use)
+## Native teaching (the headline experience) — revised 2026-06-24
 
-`yt-tutor ingest "<url>" --teach` (or `resource <id>`) registers the video as a `## Knowledge` entry
-in the current `teach` workspace's `RESOURCES.md`, pointing at the digest. After the digest loads, the
-skill asks a single-select: talk here (default) vs `/teach`. `/teach` then builds mission-grounded
-lessons that embed the actual keyframes and cite verified timestamps. Validated end to end on a
-3Blue1Brown lecture (see the demo workspace note below).
+Teaching is **native**: hand the skill a YouTube link and it ingests, knows the video, and teaches
+it here, with no second skill and no workspace to set up. The talk-vs-`/teach` hand-off was removed.
+After the digest loads the skill asks a single-select — *ask about it* (default) vs *be taught it* —
+and both happen inside `yt-tutor`. To teach, the agent builds one-idea-each HTML lessons under
+`data/videos/<id>/lessons/`, grounded in the digest (the single source of truth), citing every claim
+to a clickable `mm:ss` link, embedding the actual keyframes, with check-questions to close the loop —
+the `teach` skill's pedagogy folded in, with the video as the grounded resource. Validated end to end
+on a 3Blue1Brown lecture.
+
+**Optional export (off the default path):** for users who run a separate `teach` skill,
+`yt-tutor ingest "<url>" --teach` (or `resource <id>`) still writes a `## Knowledge` entry into that
+workspace's `RESOURCES.md`. Tested (`test_teach_export.py`) but not required.
 
 ## Verification (mandatory trust gate)
 
@@ -89,15 +96,17 @@ provider; live paid call not exercised by design).
 - Multi-hour lectures overflow the full digest (search fallback covers it).
 - Description blob is noisy for some channels.
 - Gemini/Ollama vision adapters are written but experimental; live paid vision untested.
-- A demo teach workspace (MISSION + RESOURCES + a verified lesson with embedded frames) was built in
-  the session scratchpad, not committed. Re-create with `resource` + a lesson if needed.
+- Native teaching is instruction-only so far (SKILL.md). It has not yet been run end to end as the
+  default flow (the earlier validation went through the now-removed `/teach` hand-off). The
+  slide-deck stress test below is the first real exercise of native teaching.
 
 ## Resume here (next options)
 
-1. Stress the teach loop on a different video: a slide deck with real OCR text (not animated diagrams).
+1. **In progress:** stress native teaching on a slide deck with real on-screen text (not animated
+   diagrams) — exercises OCR via `set-vision` and salience on text-heavy frames.
 2. Make agent-vision recording a smoother single step (read + set-vision in one flow).
-3. Tighten the handoff for `/teach`: emit clickable `?t=` digest links so the teacher does no arithmetic.
-4. Polish for a wider audience: trim description noise, add a `clean` command for `data/`.
+3. Polish for a wider audience: trim noisy channel-description text out of the digest, add a
+   `yt-tutor clean <id>` command to remove a video's `data/` files.
 
 ## Sanity check (confirm it still works)
 

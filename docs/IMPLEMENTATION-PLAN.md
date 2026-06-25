@@ -106,8 +106,13 @@ All shipped and pushed after the 7 phases. Validated on a 19-min 3Blue1Brown lec
   `keyframes [--pending] [--by-salience]` lists frames, `set-vision --at <ts> --file <json>` records
   the agent's own analysis, `rechunk` folds it into digest + search. The paid provider `--vision`
   pass is demoted to a headless-only fallback. Proven live (described real frames; visuals became searchable).
-- [x] **Post-digest routing.** The skill asks a single-select: talk here (default) vs `/teach`.
-  `/teach` is a choice, never a hard lock.
+- [x] **Post-digest routing.** The skill asks a single-select: ask about it (default) vs be taught it.
+  A choice, never a hard lock.
+- [x] **Native teaching, no hand-off (2026-06-24).** The `/teach` hand-off was removed so the whole
+  experience is seamless from one link: the `teach` pedagogy is folded into `yt-tutor`'s own SKILL.md,
+  grounded in the video digest, citing clickable `mm:ss` links and embedding real keyframes, lessons
+  saved under `data/videos/<id>/lessons/`. The `resource`/`--teach` export to an external `teach`
+  workspace stays as an optional power-user path (still tested), off the default flow.
 - [x] **Real-lecture fixes.** Chunks extend to 0 and to the full duration (no orphaned edge frames).
   Each frame gets an edge-density `salience` score; `keyframes --by-salience` surfaces content-rich
   frames and sinks near-blank transitions. (89% dedup on the lecture; 720p reads dense math fine.)
@@ -115,7 +120,8 @@ All shipped and pushed after the 7 phases. Validated on a 19-min 3Blue1Brown lec
   truth. `verify <id> --lesson <file>` checks every cited timestamp in one pass (words + nearest
   keyframe). SKILL.md makes verification a mandatory gate before a learner sees a lesson. It caught
   three real citation drifts in one drafted lesson.
-- [x] **Teach loop validated end to end.** A real workspace (MISSION + RESOURCES via `resource`) → a
-  dense, grounded lesson that embeds the actual keyframes and links every claim to its verified moment.
+- [x] **Lesson quality validated end to end.** A dense, grounded lesson that embeds the actual
+  keyframes and links every claim to its verified moment. (Validated via the original `/teach`
+  workspace path, since superseded by native teaching — the lesson craft and verify gate carry over.)
 
 **Status:** shipped + public (github.com/josuesto/yt-tutor); 39 tests; ruff clean. See `docs/HANDOFF.md`.

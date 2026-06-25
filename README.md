@@ -106,15 +106,19 @@ yt-tutor ingest  "https://youtu.be/..." --vision
 
 ## Use it as an agent skill
 
-`yt-tutor` ships a `SKILL.md` so an agent knows how to: ingest a URL, load the digest to
-"know" the video, answer **with timestamps**, label **speech vs visual**, and pull keyframes
-for visual questions.
+`yt-tutor` ships a `SKILL.md`, so the whole experience is: **point the skill at a YouTube link.**
+The agent ingests the video, loads the digest to "know" it, then either answers questions or
+**teaches it** — all in one place, with no other skill and no workspace to set up.
 
-**With a `teach` skill:** `yt-tutor ingest <url> --teach` registers the video as a trusted
-**Knowledge** resource in your `teach` workspace's `RESOURCES.md` and drops the digest as grounding.
-Then `/teach` builds mission-grounded lessons from the video, citing real timestamps. `yt-tutor`
-acquires the knowledge; `teach` does the pedagogy. The skill instructs the agent to **verify every
-citation** (`yt-tutor verify --lesson <file>`) before a learner sees the lesson.
+**Teaching is built in.** When you ask to be taught, the agent builds short, dense, beautiful
+lessons grounded entirely in the video: one idea each, every claim cited to a clickable `mm:ss`
+moment, the actual on-screen keyframes embedded (not described), and check-questions to close the
+loop. Before any lesson reaches you it runs `yt-tutor verify --lesson <file>`, a one-pass check of
+every cited timestamp against the transcript and frames, so nothing is taught that the video does
+not actually say or show.
+
+> Optional: if you separately run a `teach` skill, `yt-tutor ingest <url> --teach` can also register
+> the video as a Knowledge resource there. You do not need it — teaching here is native.
 
 ---
 
