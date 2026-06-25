@@ -60,7 +60,7 @@ def fetch_captions(info: dict, video_id: str):
     if not candidates:
         return None, None
     text = candidates[0].read_text(encoding="utf-8", errors="ignore")
-    segments = parse_vtt(text)
+    segments = parse_vtt(text, rolling=is_auto)
     return (segments, "youtube_captions") if segments else (None, None)
 
 
@@ -73,11 +73,22 @@ def _ts(match) -> float:
     return hours * 3600 + int(match.group(2)) * 60 + int(match.group(3)) + int(match.group(4)) / 1000
 
 
-def parse_vtt(text: str):
-    """Parse WebVTT into [(start, end, text)], stripping inline tags and collapsing
-    the rolling-duplicate lines auto-captions emit (extending the prior cue's end)."""
+_TAIL_WORDS = 60  # how far back to look for a rolling overlap (a held line is short)
+
+
+def parse_vtt(text: str, *, rolling: bool = True):
+    """Parse WebVTT into [(start, end, text)].
+
+    YouTube auto-captions *roll*: each cue repeats the previous completed line
+    (the held top line) before adding the new words being typed, so cue text
+    looks like "<previous line> <new line>". With ``rolling=True`` we strip, word
+    by word, the longest prefix of each cue that the prior text already emitted,
+    keeping only the NEW speech. Taking the *longest* overlap preserves genuine
+    repeats (e.g. "what's a cfp? cfp stands for...") because the match aligns to
+    the whole held line, not a stray word. ``rolling=False`` keeps the
+    conservative exact-duplicate collapse for clean manual subtitles."""
     segments: list[tuple[float, float, str]] = []
-    last_text = None
+    tail: list[str] = []   # recently emitted words, for overlap detection
     for block in re.split(r"\n\s*\n", text):
         lines = [ln for ln in block.splitlines() if ln.strip()]
         timing_idx = next((i for i, ln in enumerate(lines) if "-->" in ln), None)
@@ -90,14 +101,31 @@ def parse_vtt(text: str):
         clean = _clean(" ".join(lines[timing_idx + 1:]))
         if not clean:
             continue
-        if clean == last_text:
+
+        if rolling:
+            new_words = _strip_overlap(tail, clean.split())
+        elif segments and clean == segments[-1][2]:
+            new_words = []                       # exact duplicate cue
+        else:
+            new_words = clean.split()
+
+        if not new_words:                        # fully contained in prior text
             if segments:
                 s, _e, t = segments[-1]
-                segments[-1] = (s, end, t)
+                segments[-1] = (s, end, t)       # just extend its end time
             continue
-        segments.append((start, end, clean))
-        last_text = clean
+
+        segments.append((start, end, " ".join(new_words)))
+        tail = (tail + new_words)[-_TAIL_WORDS:]
     return segments
+
+
+def _strip_overlap(tail: list[str], words: list[str]) -> list[str]:
+    """Drop the longest prefix of ``words`` that equals a suffix of ``tail``."""
+    for k in range(min(len(tail), len(words)), 0, -1):
+        if tail[-k:] == words[:k]:
+            return words[k:]
+    return words
 
 
 def _clean(s: str) -> str:
