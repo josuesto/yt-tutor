@@ -96,17 +96,30 @@ provider; live paid call not exercised by design).
 - Multi-hour lectures overflow the full digest (search fallback covers it).
 - Description blob is noisy for some channels.
 - Gemini/Ollama vision adapters are written but experimental; live paid vision untested.
-- Native teaching is instruction-only so far (SKILL.md). It has not yet been run end to end as the
-  default flow (the earlier validation went through the now-removed `/teach` hand-off). The
-  slide-deck stress test below is the first real exercise of native teaching.
+
+## Native teaching validated on a slide deck (2026-06-24)
+
+Ran the full native flow end to end on a CNCF lightning talk, "FAQs for CFPs" (`jCz9QPrJ6Eo`, 5:12,
+real text slides). Findings:
+- **Dedup on static slides:** 312 frames -> 27 keyframes (91%). Captions free (no whisper).
+- **Bug found + fixed:** `rechunk`/runner folded only `scene_description` into the searchable
+  `embedding_text`, so a slide's OCR'd bullets (`visible_text`) were not searchable. Fixed with
+  `db.visual_texts_for_frame` (display vs index split); slide-only phrases now hit. Commit `1dc02ec`.
+- **Lesson:** built `data/videos/jCz9QPrJ6Eo/lessons/0001-writing-a-cfp-that-gets-you-on-stage.html`
+  (857 words, 4 sections, 4 embedded real slides, 17 cited clickable `mm:ss` links, check questions +
+  practice). `verify --lesson` grounded all 17 in one pass; caught one phrasing drift (fixed) and
+  flagged the footer's `(5:12)` duration as a phantom citation (regex can't tell duration from a cite;
+  errs safe). DOM-checked: all four slides decode to 640x360.
+- **Salience note:** scores are flat on text slides (0.04-0.066), so chapters guide frame choice, not
+  salience. Consistent with "sort hint, never a filter."
 
 ## Resume here (next options)
 
-1. **In progress:** stress native teaching on a slide deck with real on-screen text (not animated
-   diagrams) — exercises OCR via `set-vision` and salience on text-heavy frames.
-2. Make agent-vision recording a smoother single step (read + set-vision in one flow).
-3. Polish for a wider audience: trim noisy channel-description text out of the digest, add a
+1. Make agent-vision recording a smoother single step (read + set-vision in one flow).
+2. Polish for a wider audience: trim noisy channel-description text out of the digest, add a
    `yt-tutor clean <id>` command to remove a video's `data/` files.
+3. Consider teaching `Lesson 2` from the same talk (nerves, rejection, after acceptance) to exercise
+   multi-lesson progression + a shared glossary.html.
 
 ## Sanity check (confirm it still works)
 
