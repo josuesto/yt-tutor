@@ -1,16 +1,20 @@
 # yt-tutor
 
-**Turn any YouTube video into something an AI agent can be *taught* — and teach back to you.**
+[![CI](https://github.com/josuesto/yt-tutor/actions/workflows/ci.yml/badge.svg)](https://github.com/josuesto/yt-tutor/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+
+**Turn any YouTube video into something an AI agent can be *taught*, then have it teach the video back to you.**
 
 `yt-tutor` ingests a YouTube video into a local, timestamped knowledge store that combines
 the **spoken transcript** with **what's actually shown on screen** (frames analyzed at 1
-frame/second). You can then ask any agent (Claude Code, Cursor Composer, …) about the video
-and get answers that **cite `mm:ss` timestamps** and tell you whether each point came from
+frame/second). You can then ask any agent (Claude Code, Cursor Composer, and others) about the
+video and get answers that **cite `mm:ss` timestamps** and tell you whether each point came from
 **speech, visuals, or both**.
 
-It's a **CLI + an agent skill**, not a web app. The Python engine does the heavy,
+It's a **CLI plus an agent skill**, not a web app. The Python engine does the heavy,
 deterministic work (download, transcribe, frame-extract, dedupe, chunk, store). The
-*teaching* is done by your agent reading the engine's output — so the default path needs
+*teaching* is done by your agent reading the engine's output, so the default path needs
 **no API key and costs nothing** beyond local compute.
 
 > Think "NotebookLM for a single YouTube video", but as a local tool any coding agent can drive.
@@ -26,7 +30,7 @@ it sees back into the store with `set-vision`. A paid per-frame vision pass (`--
 only for *headless* runs where no vision-capable agent is present.
 
 **Vision only on scene changes.** Frames are extracted at 1 fps (so there's a record every
-second), but vision runs only on **keyframes** — frames where the scene actually shifts
+second), but vision runs only on **keyframes**, the frames where the scene actually shifts
 (perceptual-hash dedup). A 20-minute talking-head video drops from ~1,200 vision calls to a
 couple hundred.
 
@@ -45,7 +49,7 @@ pip install -e ".[anthropic]"    # + the default vision provider
 pip install -e ".[all]"          # everything
 ```
 
-Copy `.env.example` → `.env` and fill in keys **only if** you enable the vision pass.
+Copy `.env.example` to `.env` and fill in keys **only if** you enable the vision pass.
 
 ### Install as a Claude Code skill
 
@@ -89,26 +93,28 @@ yt-tutor ingest  "https://youtu.be/..." --vision
 | Command | Purpose |
 |---|---|
 | `ingest <url> [--no-vision] [--teach] [--force]` | Run the full pipeline (resumable). |
-| `digest <id\|url> [--md\|--json]` | The timestamped transcript + frame index an agent loads to know the video. |
+| `digest <id\|url> [--md\|--json]` | The timestamped transcript and frame index an agent loads to know the video. |
 | `summary <id\|url>` | Free structural overview (stats, chapters, timeline). |
 | `search <id\|url> "<q>" [--json]` | FTS5 retrieval over chunks (long-video fallback). |
 | `ask <id\|url> "<q>" [--json]` | Timestamped evidence for a question, labeled speech/visual. |
-| `frames <id\|url> --at <ts>` | Resolve a timestamp → keyframe image to read. |
+| `frames <id\|url> --at <ts>` | Resolve a timestamp to the keyframe image to read. |
 | `transcript <id\|url> --at <ts>` | Spoken transcript around a moment (verify a claim). |
 | `keyframes <id\|url> [--pending] [--by-salience]` | List the frames worth looking at, richest first. |
 | `set-vision <id\|url> --at <ts> --file <json>` | Record the agent's own analysis of a frame. |
-| `rechunk <id\|url>` | Fold recorded visuals into digest + search. |
+| `rechunk <id\|url>` | Fold recorded visuals into digest and search. |
 | `verify <id\|url> --lesson <file>` | Check every timestamp a lesson cites against the source, one pass. |
-| `resource <id\|url>` | Register the video in a `teach` workspace's `RESOURCES.md`. |
+| `resource <id\|url>` | Optional: export the video to a separate `teach` workspace's `RESOURCES.md`. |
 | `status <id>` · `list` · `estimate <url>` | Ingest progress · library · headless-vision cost preview. |
+
+Full reference: [`references/cli.md`](references/cli.md). Tuning knobs: [`docs/MANUAL.md`](docs/MANUAL.md).
 
 ---
 
 ## Use it as an agent skill
 
-`yt-tutor` ships a `SKILL.md`, so the whole experience is: **point the skill at a YouTube link.**
-The agent ingests the video, loads the digest to "know" it, then either answers questions or
-**teaches it** — all in one place, with no other skill and no workspace to set up.
+`yt-tutor` ships a `SKILL.md`, so the whole experience is one step: **point the skill at a YouTube
+link.** The agent ingests the video, loads the digest to "know" it, then either answers questions
+or **teaches it**, all in one place, with no other skill and no workspace to set up.
 
 **Teaching is built in.** When you ask to be taught, the agent builds short, dense, beautiful
 lessons grounded entirely in the video: one idea each, every claim cited to a clickable `mm:ss`
@@ -118,7 +124,7 @@ every cited timestamp against the transcript and frames, so nothing is taught th
 not actually say or show.
 
 > Optional: if you separately run a `teach` skill, `yt-tutor ingest <url> --teach` can also register
-> the video as a Knowledge resource there. You do not need it — teaching here is native.
+> the video as a Knowledge resource there. You do not need it. Teaching here is native.
 
 ---
 
@@ -130,27 +136,32 @@ Set `VISION_PROVIDER` in `.env`.
 
 | Provider | Notes |
 |---|---|
-| `anthropic` *(default)* | Haiku-class vision. *A Max/Pro subscription does **not** include API access — needs a pay-per-use key.* |
+| `anthropic` *(default)* | Haiku-class vision. A Max/Pro subscription does **not** include API access. It needs a pay-per-use key. |
 | `gemini` | Cheapest; generous free tier. |
 | `openai` | `gpt-4o-mini` vision; mature structured output. |
-| `ollama` | Local + free (e.g. `llava`); slower, needs a decent GPU. |
+| `ollama` | Local and free (e.g. `llava`); slower, needs a decent GPU. |
 
 ---
 
 ## Troubleshooting
 
-- **`ffmpeg not found`** — install it and ensure it's on PATH (`ffmpeg -version`).
-- **`Private/age-restricted video`** — yt-tutor reports it and exits; these can't be ingested.
-- **`No captions`** — install `[whisper]` to transcribe from audio, or it'll tell you none exist.
-- **Ingest crashed?** — just run `ingest` again; it resumes from the last completed step and
-  never re-pays for frames already analyzed.
+- **`ffmpeg not found`**: install it and ensure it's on PATH (`ffmpeg -version`).
+- **`Private/age-restricted video`**: yt-tutor reports it and exits. These can't be ingested.
+- **`No captions`**: install `[whisper]` to transcribe from audio, or it'll tell you none exist.
+- **Ingest crashed?** Run `ingest` again. It resumes from the last completed step and never
+  re-pays for frames already analyzed.
 
 ## Roadmap
 
-Web UI + clickable player, embeddings/hybrid retrieval, OCR-only pre-pass, playlists,
+Web UI plus clickable player, embeddings/hybrid retrieval, OCR-only pre-pass, playlists,
 multi-video knowledge bases, background queue. See [`docs/DESIGN.md`](docs/DESIGN.md).
 Project state and how to resume: [`docs/HANDOFF.md`](docs/HANDOFF.md).
 
+## Contributing
+
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup and
+the one design rule. Changes are logged in [CHANGELOG.md](CHANGELOG.md).
+
 ## License
 
-MIT
+Released under the [MIT License](LICENSE).
