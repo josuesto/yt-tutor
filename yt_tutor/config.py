@@ -7,6 +7,7 @@ featherweight. Existing environment variables always win over `.env`.
 from __future__ import annotations
 
 import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -32,8 +33,23 @@ def load_dotenv(path: Path | None = None) -> None:
 
 # ---- deterministic paths --------------------------------------------------
 
+def _default_data_dir() -> Path:
+    """A stable per-user data directory, so the library lives in one place no
+    matter which folder you run `yt-tutor` from. Without this the DB would fork
+    into a new `./data` per working directory after a global or skill install.
+    Override with YT_TUTOR_DATA_DIR (e.g. to keep data inside a repo)."""
+    if os.name == "nt":
+        base = os.environ.get("LOCALAPPDATA") or (Path.home() / "AppData" / "Local")
+    elif sys.platform == "darwin":
+        base = Path.home() / "Library" / "Application Support"
+    else:
+        base = os.environ.get("XDG_DATA_HOME") or (Path.home() / ".local" / "share")
+    return Path(base) / "yt-tutor"
+
+
 def data_dir() -> Path:
-    return Path(os.environ.get("YT_TUTOR_DATA_DIR", "data")).expanduser()
+    env = os.environ.get("YT_TUTOR_DATA_DIR")
+    return Path(env).expanduser() if env else _default_data_dir()
 
 
 def db_path() -> Path:

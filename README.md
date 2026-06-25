@@ -7,10 +7,11 @@
 **Turn any YouTube video into something an AI agent can be *taught*, then have it teach the video back to you.**
 
 `yt-tutor` ingests a YouTube video into a local, timestamped knowledge store that combines
-the **spoken transcript** with **what's actually shown on screen** (frames analyzed at 1
-frame/second). You can then ask any agent (Claude Code, Cursor Composer, and others) about the
-video and get answers that **cite `mm:ss` timestamps** and tell you whether each point came from
-**speech, visuals, or both**.
+the **spoken transcript** with **the frames shown on screen** (captured at 1 frame/second, then
+collapsed to keyframes). For a visual question the agent **reads the relevant keyframe itself**;
+nothing forces a paid vision pass. You can then ask any agent (Claude Code, Cursor Composer, and
+others) about the video and get answers that **cite `mm:ss` timestamps** and tell you whether each
+point came from **speech, visuals, or both**.
 
 It's a **CLI plus an agent skill**, not a web app. The Python engine does the heavy,
 deterministic work (download, transcribe, frame-extract, dedupe, chunk, store). The
@@ -40,8 +41,15 @@ couple hundred.
 
 Requires **Python 3.10+**, **ffmpeg**, and **yt-dlp** on your PATH.
 
+Not on PyPI yet. Install straight from GitHub:
+
 ```bash
 # ffmpeg:  https://ffmpeg.org/download.html   (or: winget install Gyan.FFmpeg)
+
+# Quickest: install the CLI into its own isolated environment
+pipx install "git+https://github.com/josuesto/yt-tutor"
+
+# Or clone for development / to hack on it
 git clone https://github.com/josuesto/yt-tutor && cd yt-tutor
 pip install -e .                 # core (transcript-only, zero keys)
 pip install -e ".[whisper]"      # + local speech-to-text fallback
@@ -49,7 +57,15 @@ pip install -e ".[anthropic]"    # + the default vision provider
 pip install -e ".[all]"          # everything
 ```
 
+To pull in extras with pipx, add them to the spec, for example
+`pipx install "yt-tutor[whisper] @ git+https://github.com/josuesto/yt-tutor"`.
+
 Copy `.env.example` to `.env` and fill in keys **only if** you enable the vision pass.
+
+**Where your data lives:** by default, a stable per-user directory
+(`%LOCALAPPDATA%\yt-tutor` on Windows, `~/Library/Application Support/yt-tutor` on macOS,
+`~/.local/share/yt-tutor` on Linux), so one library serves you from any folder. Override it with
+`YT_TUTOR_DATA_DIR` (for example, point it inside a repo while developing).
 
 ### Install as a Claude Code skill
 
@@ -85,6 +101,15 @@ yt-tutor verify <video-id-or-url> --lesson lesson.html
 yt-tutor estimate "https://youtu.be/..."     # preview the cost first
 yt-tutor ingest  "https://youtu.be/..." --vision
 ```
+
+---
+
+## Demo
+
+A 60-second walkthrough with real output (ingest, know it, ask it, read a slide, record what you
+see, verify) is in [`docs/DEMO.md`](docs/DEMO.md). For the animated version, render
+[`docs/demo.tape`](docs/demo.tape) with [`vhs`](https://github.com/charmbracelet/vhs):
+`vhs docs/demo.tape` produces `demo.gif`.
 
 ---
 

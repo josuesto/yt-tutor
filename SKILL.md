@@ -15,7 +15,8 @@ workspace to set up. Giving the link is the only step the user has to take.
 
 ## Prerequisites
 
-- `yt-tutor` installed (`pip install yt-tutor`), with `ffmpeg` and `yt-dlp` on PATH.
+- `yt-tutor` installed (`pipx install "git+https://github.com/josuesto/yt-tutor"`, or clone and
+  `pip install -e .`; not on PyPI yet), with `ffmpeg` and `yt-dlp` on PATH.
 - Ingesting a video (transcript + frames) is **free** and needs no API key.
 - **You are the vision.** When a question or a lesson needs the picture, look at the frame
   yourself (read the image file). The engine never needs a paid vision model for this. A

@@ -24,10 +24,24 @@ All notable changes to this project are documented here. The format follows
   pass is a headless-only fallback for runs with no vision-capable agent present.
 - The `resource` / `ingest --teach` export to an external `teach` workspace is now optional and
   off the default path.
+- Default data directory is now a stable per-user location (`%LOCALAPPDATA%\yt-tutor`,
+  `~/Library/Application Support/yt-tutor`, or `~/.local/share/yt-tutor`) instead of `./data`
+  relative to the working directory, so a global or skill install keeps one library. Override
+  with `YT_TUTOR_DATA_DIR`.
 
 ### Fixed
 - OCR'd on-screen text (`visible_text`) and `notable_details` now enter the searchable chunk
   index, not just a keyframe's one-line `scene_description`, so a slide's actual words are findable.
+- Rolling-overlap pollution in YouTube auto-captions: each cue repeats the previous held line, so
+  the parser now strips the longest already-emitted prefix per cue (preserving genuine repeats),
+  instead of only collapsing exact-duplicate cues. On the sample talk this cut 298 segments to 150
+  with no doubled phrases, cleaning summaries, search, chunks, and lessons.
+
+### Docs
+- Install is from GitHub (`pipx install "git+https://github.com/josuesto/yt-tutor"`); not on PyPI yet.
+- Clarified that frames are *captured* at 1 fps and the agent reads keyframes on demand, rather than
+  implying automatic full visual analysis.
+- Added a 60-second walkthrough (`docs/DEMO.md`) and a `vhs` tape (`docs/demo.tape`) for a GIF.
 
 ## [0.1.0] - 2026-06-24
 
