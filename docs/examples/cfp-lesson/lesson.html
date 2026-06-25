@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 1 · Writing a CFP that gets you on stage</title>
+<style>
+  :root { --ink:#1a1f2b; --muted:#5b6472; --line:#e3e7ee; --accent:#3257d6; --accent-soft:#eef2fe; --warm:#fff7e8; --warm-line:#f0d9a8; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f6f7f9; color:var(--ink);
+    font:17px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:48px 28px 80px; }
+  header.lede { border-bottom:2px solid var(--line); padding-bottom:22px; margin-bottom:34px; }
+  .kicker { font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); font-weight:700; }
+  h1 { font-size:30px; line-height:1.2; margin:.3em 0 .2em; letter-spacing:-.01em; }
+  .source { font-size:14.5px; color:var(--muted); }
+  .source a { color:var(--muted); }
+  .goal { background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:0 8px 8px 0;
+    padding:14px 18px; margin:24px 0 0; font-size:15.5px; }
+  h2 { font-size:21px; margin:44px 0 6px; letter-spacing:-.01em; }
+  h2 .num { color:var(--accent); font-variant-numeric:tabular-nums; margin-right:.45em; }
+  figure { margin:20px 0 8px; }
+  figure img { width:100%; border:1px solid var(--line); border-radius:10px; display:block;
+    box-shadow:0 1px 4px rgba(20,30,60,.06); }
+  figcaption { font-size:13.5px; color:var(--muted); margin-top:8px; }
+  .cite { white-space:nowrap; font-variant-numeric:tabular-nums; font-weight:600; text-decoration:none;
+    color:var(--accent); background:var(--accent-soft); padding:1px 6px; border-radius:5px; font-size:14px; }
+  .cite:hover { background:#dfe7fe; }
+  .src-tag { font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:var(--muted);
+    border:1px solid var(--line); border-radius:4px; padding:0 5px; margin-left:2px; vertical-align:1px; }
+  .terms { background:#fff; border:1px solid var(--line); border-radius:12px; padding:6px 22px; margin:40px 0; }
+  .terms h3, .checks h3, .practice h3 { font-size:16px; margin:18px 0 8px; }
+  .terms dt { font-weight:700; margin-top:12px; }
+  .terms dd { margin:2px 0 0; color:var(--muted); font-size:15.5px; }
+  .checks { margin:40px 0 0; }
+  .checks ol { padding-left:22px; }
+  .checks li { margin:10px 0; }
+  .practice { background:var(--warm); border:1px solid var(--warm-line); border-radius:12px; padding:6px 22px 18px; margin:34px 0 0; }
+  .practice .task { font-weight:600; }
+  footer { margin-top:46px; padding-top:18px; border-top:1px solid var(--line); font-size:14.5px; color:var(--muted); }
+  p { margin:12px 0; }
+  strong { color:var(--ink); }
+</style>
+</head>
+<body>
+<main>
+  <header class="lede">
+    <div class="kicker">Lesson 1 · Conference speaking</div>
+    <h1>Writing a CFP that gets you on stage</h1>
+    <p class="source">Grounded in <a href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo">“FAQs for CFPs: A Beginner’s Guide to Conference Speaking”</a>,
+      a 5-minute lightning talk by Paula Kennedy (Syntasso) at KubeCon + CloudNativeCon Europe 2023.
+      Every claim links to the exact moment in the talk. <span class="src-tag">speech</span> is what she said;
+      <span class="src-tag">slide</span> is what was on screen.</p>
+    <div class="goal"><strong>What you’ll get from this lesson:</strong> the one skill that turns “I’d like to
+      speak someday” into a submitted proposal, knowing what a CFP is, exactly what fields it asks for, how to
+      choose a topic, and how to answer the doubt that stops most first-timers.</div>
+  </header>
+
+  <h2><span class="num">1</span>What a CFP actually is</h2>
+  <p><strong>CFP stands for “Call For Proposal.”</strong> It is, in Kennedy’s words, basically a form you fill in
+    with loads of information
+    <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=24s">0:24</a><span class="src-tag">speech</span>.
+    When a conference wants speakers, it opens its CFP and invites anyone to submit a talk idea.</p>
+  <p>Your form does not go straight onto the schedule. It goes to <strong>a committee, usually volunteers</strong>,
+    who read <strong>thousands of submissions</strong> and decide whether each talk fits the event
+    <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=32s">0:32</a><span class="src-tag">speech</span>.
+    That single fact shapes everything else in this lesson: you are writing for a tired human reviewer who has a
+    huge pile to get through, so clarity wins.</p>
+  <figure>
+    <img src="assets/q1-whats-a-cfp.jpg" alt="Slide: Q1 What's a CFP? CFP = Call For Proposal, with an icon flow from a clipboard, to reviewers, to a deadline, to an accept or reject decision.">
+    <figcaption>The “What’s a CFP?” slide
+      <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=23s">0:23</a><span class="src-tag">slide</span>:
+      a proposal goes to reviewers, a deadline passes, and you are accepted (check) or not (cross).</figcaption>
+  </figure>
+
+  <h2><span class="num">2</span>What the form actually asks for</h2>
+  <p>A CFP asks for a fairly standard set of fields. Two of them carry most of the weight:</p>
+  <p><strong>The talk title</strong> is the first thing reviewers and attendees look at, so make it something
+    catchy <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=82s">1:22</a><span class="src-tag">speech</span>.
+    <strong>The talk abstract</strong> has to carry just enough detail that a reader knows what they are going to be
+    getting <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=86s">1:26</a><span class="src-tag">speech</span>.
+    Most forms also ask what the community will get from your talk, the <strong>audience takeaways</strong>, which is
+    how the committee understands what the talk is really about
+    <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=90s">1:30</a><span class="src-tag">speech</span>.</p>
+  <figure>
+    <img src="assets/q3-what-info.jpg" alt="Slide: Q3 What info will I need? Bullets for personal details, short biography, talk title (first thing reviewers see), talk abstract (enough detail), benefits to the community / audience takeaways, and additional information such as accessibility requirements and github repos.">
+    <figcaption>The full field list
+      <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=74s">1:14</a><span class="src-tag">slide</span>:
+      personal details, a short biography, the title, the abstract, audience takeaways, and extras such as past
+      speaking experience, accessibility requirements, and GitHub repos.</figcaption>
+  </figure>
+  <p><strong>The professional move:</strong> once you have written this information, save it, because you can reuse it
+    over and over for every CFP you apply to
+    <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=98s">1:38</a><span class="src-tag">speech</span>.
+    Your bio and your standard abstract become a kit you tweak per event, not something you rewrite from scratch.</p>
+
+  <h2><span class="num">3</span>What to talk about</h2>
+  <p>The best talks Kennedy has seen are where people speak about <strong>something they are passionate about</strong>,
+    something they care about, or something they have learned
+    <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=109s">1:49</a><span class="src-tag">speech</span>.
+    That includes <strong>failure stories</strong>: sometimes when things go wrong, those are the best lessons people
+    are interested to hear about
+    <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=116s">1:56</a><span class="src-tag">speech</span>.</p>
+  <p>Not sure what fits an event? <strong>Look at past talks</strong> to see what other talks at that conference have
+    been about
+    <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=125s">2:05</a><span class="src-tag">speech</span>,
+    and if the organizers offer to answer questions, <strong>contact them and just ask</strong> what kind of talks
+    would be best
+    <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=130s">2:10</a><span class="src-tag">speech</span>.</p>
+  <figure>
+    <img src="assets/q4-what-to-talk-about.jpg" alt="Slide: Q4 What should I talk about? Bullets: something you care about; something you've learned = the good, bad and ugly; read the event information / look at past events; if organisers offer to answer questions, ask them.">
+    <figcaption>The topic checklist
+      <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=107s">1:47</a><span class="src-tag">slide</span>:
+      care about it, you’ve learned it (the good, bad and ugly), check past events, and ask the organisers.</figcaption>
+  </figure>
+
+  <h2><span class="num">4</span>“Why me?” the doubt to push past</h2>
+  <p>The thought that stops most first-time speakers: whatever you want to talk about, everyone has already talked
+    about it. There are probably thousands and thousands of talks about Kubernetes
+    <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=149s">2:29</a><span class="src-tag">speech</span>.
+    Kennedy’s answer: <strong>your story is different. No one has the same experience you have, no one has been on the
+    same journey</strong>
+    <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=151s">2:31</a><span class="src-tag">speech</span>.
+    Your version might be the one that inspires someone else to get up and tell their story
+    <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=157s">2:37</a><span class="src-tag">speech</span>.</p>
+  <figure>
+    <img src="assets/q5-why-me.jpg" alt="Slide: Q5 Why me? A quote: Tell your story. Show your example. Tell everyone it's possible, and others shall feel the courage to climb their own mountains. Attributed to Paulo Coelho.">
+    <figcaption>The “Why me?” slide
+      <a class="cite" href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo&t=141s">2:21</a><span class="src-tag">slide</span>,
+      a quote attributed to Paulo Coelho: “Tell your story… and others shall feel the courage to climb their own
+      mountains.”</figcaption>
+  </figure>
+
+  <div class="terms">
+    <h3>Key terms</h3>
+    <dl>
+      <dt>CFP (Call For Proposal)</dt>
+      <dd>The open form a conference uses to collect talk ideas from would-be speakers.</dd>
+      <dt>Abstract</dt>
+      <dd>The short description of your talk. Just enough detail that a reviewer knows what they’re getting.</dd>
+      <dt>Audience takeaways</dt>
+      <dd>What attendees will leave with. The field that tells the committee what your talk is really about.</dd>
+    </dl>
+  </div>
+
+  <div class="checks">
+    <h3>Check yourself</h3>
+    <ol>
+      <li>Who reads your submission, and what does that tell you about how to write it?</li>
+      <li>Which single field do reviewers and attendees look at first?</li>
+      <li>What should the abstract contain “just enough” of, and why not more?</li>
+      <li>You think your topic is overdone. What is the one-line reason to submit anyway?</li>
+      <li>What is the time-saving habit to build the moment you finish your first proposal?</li>
+    </ol>
+  </div>
+
+  <div class="practice">
+    <h3>Your turn (2 minutes)</h3>
+    <p class="task">Pick a thing you’ve learned or got wrong at work. Draft a catchy <strong>talk title</strong> plus a
+      <strong>two-sentence abstract</strong> for it.</p>
+    <p>Then paste it back to me. I’ll react as a CFP reviewer skimming a pile of submissions: is the title catchy,
+      does the abstract say clearly what I’d be getting, and are the audience takeaways obvious? We’ll tighten it
+      together. Ask me anything that’s unclear, that’s what I’m here for.</p>
+  </div>
+
+  <footer>
+    Source: Paula Kennedy, “FAQs for CFPs: A Beginner’s Guide to Conference Speaking,” KubeCon + CloudNativeCon
+    Europe 2023 (5:12). Watch the full talk:
+    <a href="https://www.youtube.com/watch?v=jCz9QPrJ6Eo">youtube.com/watch?v=jCz9QPrJ6Eo</a>.
+    This lesson teaches one slice (writing the proposal). The talk also covers nerves, rejection, and what happens
+    after you’re accepted, good material for Lesson 2.
+  </footer>
+</main>
+</body>
+</html>

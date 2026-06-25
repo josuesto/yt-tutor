@@ -108,10 +108,12 @@ yt-tutor ingest  "https://youtu.be/..." --vision
 
 ## Demo
 
-The clip at the top is a real session. Regenerate it any time with
-`python scripts/make_demo_gif.py` (Pillow only, no recorder needed). A step-by-step walkthrough
-with the full command output is in [`docs/DEMO.md`](docs/DEMO.md). A [`vhs`](https://github.com/charmbracelet/vhs)
-tape ([`docs/demo.tape`](docs/demo.tape)) is also included for a live-terminal recording.
+The clip at the top is generated from real session output (every line is genuine `yt-tutor`
+output from the sample talk), rendered deterministically by `python scripts/make_demo_gif.py`
+(Pillow only, no recorder needed). A step-by-step walkthrough with the full command output is in
+[`docs/DEMO.md`](docs/DEMO.md), and a complete worked lesson is in
+[`docs/examples/`](docs/examples/). A [`vhs`](https://github.com/charmbracelet/vhs) tape
+([`docs/demo.tape`](docs/demo.tape)) is also included for a live-terminal recording.
 
 ---
 
