@@ -1,12 +1,12 @@
 # yt-tutor
 
 [![CI](https://github.com/josuesto/yt-tutor/actions/workflows/ci.yml/badge.svg)](https://github.com/josuesto/yt-tutor/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/josuesto/yt-tutor/blob/main/LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 
 **Turn any YouTube video into something an AI agent can be *taught*, then have it teach the video back to you.**
 
-![yt-tutor in action: ingest a talk, ask it, read a slide, search a slide's words](docs/demo.gif)
+![yt-tutor in action: ingest a talk, ask it, read a slide, search a slide's words](https://raw.githubusercontent.com/josuesto/yt-tutor/main/docs/demo.gif)
 
 `yt-tutor` ingests a YouTube video into a local, timestamped knowledge store that combines
 the **spoken transcript** with **the frames shown on screen** (captured at 1 frame/second, then
@@ -111,9 +111,11 @@ yt-tutor ingest  "https://youtu.be/..." --vision
 The clip at the top is generated from real session output (every line is genuine `yt-tutor`
 output from the sample talk), rendered deterministically by `python scripts/make_demo_gif.py`
 (Pillow only, no recorder needed). A step-by-step walkthrough with the full command output is in
-[`docs/DEMO.md`](docs/DEMO.md), and a complete worked lesson is in
-[`docs/examples/`](docs/examples/). A [`vhs`](https://github.com/charmbracelet/vhs) tape
-([`docs/demo.tape`](docs/demo.tape)) is also included for a live-terminal recording.
+[`docs/DEMO.md`](https://github.com/josuesto/yt-tutor/blob/main/docs/DEMO.md), and a complete worked
+lesson is in [`docs/examples/`](https://github.com/josuesto/yt-tutor/tree/main/docs/examples). A
+[`vhs`](https://github.com/charmbracelet/vhs) tape
+([`docs/demo.tape`](https://github.com/josuesto/yt-tutor/blob/main/docs/demo.tape)) is also included
+for a live-terminal recording.
 
 ---
 
@@ -135,7 +137,8 @@ output from the sample talk), rendered deterministically by `python scripts/make
 | `resource <id\|url>` | Optional: export the video to a separate `teach` workspace's `RESOURCES.md`. |
 | `status <id>` · `list` · `estimate <url>` | Ingest progress · library · headless-vision cost preview. |
 
-Full reference: [`references/cli.md`](references/cli.md). Tuning knobs: [`docs/MANUAL.md`](docs/MANUAL.md).
+Full reference: [`references/cli.md`](https://github.com/josuesto/yt-tutor/blob/main/references/cli.md).
+Tuning knobs: [`docs/MANUAL.md`](https://github.com/josuesto/yt-tutor/blob/main/docs/MANUAL.md).
 
 ---
 
@@ -183,14 +186,18 @@ Set `VISION_PROVIDER` in `.env`.
 ## Roadmap
 
 Web UI plus clickable player, embeddings/hybrid retrieval, OCR-only pre-pass, playlists,
-multi-video knowledge bases, background queue. See [`docs/DESIGN.md`](docs/DESIGN.md).
-Project state and how to resume: [`docs/HANDOFF.md`](docs/HANDOFF.md).
+multi-video knowledge bases, background queue. See
+[`docs/DESIGN.md`](https://github.com/josuesto/yt-tutor/blob/main/docs/DESIGN.md).
+Project state and how to resume:
+[`docs/HANDOFF.md`](https://github.com/josuesto/yt-tutor/blob/main/docs/HANDOFF.md).
 
 ## Contributing
 
-Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup and
-the one design rule. Changes are logged in [CHANGELOG.md](CHANGELOG.md).
+Issues and pull requests are welcome. See
+[CONTRIBUTING.md](https://github.com/josuesto/yt-tutor/blob/main/CONTRIBUTING.md) for dev setup and
+the one design rule. Changes are logged in
+[CHANGELOG.md](https://github.com/josuesto/yt-tutor/blob/main/CHANGELOG.md).
 
 ## License
 
-Released under the [MIT License](LICENSE).
+Released under the [MIT License](https://github.com/josuesto/yt-tutor/blob/main/LICENSE).

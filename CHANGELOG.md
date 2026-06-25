@@ -45,6 +45,8 @@ First public release.
   worked example lesson under `docs/examples/`, plus design / manual / handoff docs and a `vhs`
   tape. GitHub Actions CI runs ruff + pytest across Python 3.10-3.13. Install is from GitHub
   (not on PyPI yet).
+- Packaged for PyPI (valid sdist + wheel, `twine check` clean) with a Trusted-Publishing release
+  workflow; see `RELEASING.md`.
 
 [Unreleased]: https://github.com/josuesto/yt-tutor/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/josuesto/yt-tutor/releases/tag/v0.1.0

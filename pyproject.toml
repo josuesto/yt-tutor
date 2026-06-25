@@ -8,9 +8,26 @@ version = "0.1.0"
 description = "Ingest a YouTube video (speech + visuals, timestamped) so an AI agent can be taught it and teach it back to you, citing timestamps."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Josue Soto" }]
 keywords = ["youtube", "transcript", "vision", "rag", "agent", "skill", "notebooklm", "yt-dlp", "whisper"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Education",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+]
 
 # Core deps are deliberately tiny so the tool installs fast.
 # Everything expensive (whisper model, vision SDKs) is an opt-in extra.
@@ -37,7 +54,9 @@ yt-tutor = "yt_tutor.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/josuesto/yt-tutor"
+Repository = "https://github.com/josuesto/yt-tutor"
 Issues = "https://github.com/josuesto/yt-tutor/issues"
+Changelog = "https://github.com/josuesto/yt-tutor/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["yt_tutor"]
